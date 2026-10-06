@@ -21,7 +21,7 @@ export default function Builder() {
   const [selectedDet, setSelectedDet] = useState<string>() // or a detachment shown there
   const [ruleSelected, setRuleSelected] = useState(false) // or the army rule
   const [ruleModal, setRuleModal] = useState(false)
-  const [sheet, setSheet] = useState<{ unit: Unit; models: number; loadout?: Loadout; all?: boolean }>()
+  const [sheet, setSheet] = useState<{ unit: Unit; models: number; loadout?: Loadout; enhancement?: Enhancement; all?: boolean }>()
   const [gear, setGear] = useState<{ unit: Unit; choice: GearChoice }>()
   const [enhView, setEnhView] = useState<{ enhancement: Enhancement; detachment: string }>()
   const [detModal, setDetModal] = useState<Detachment>()
@@ -146,7 +146,7 @@ export default function Builder() {
                     const enh = enhancements.find((x) => x.id === e.enhancementId)
                     return (
                       <li key={e.uid} className={e.uid === selected ? 'on' : ''} onClick={() => pickEntry(e.uid)}>
-                        <Eye label={`${u.name} datasheet`} onClick={() => setSheet({ unit: u, models: s.models, loadout: e.loadout })} />
+                        <Eye label={`${u.name} datasheet`} onClick={() => setSheet({ unit: u, models: s.models, loadout: e.loadout, enhancement: enh })} />
                         <span className="grow">
                           {s.models} {u.name}{s.label ? ` ${s.label}` : ''} <small className="pts">{entryPoints(army, e, roster)} pts</small>
                           {loadoutSummary(u, s.models, e.loadout).map((g) => <em key={g} className="sub"> • {g}</em>)}
@@ -259,7 +259,7 @@ export default function Builder() {
         </aside>
       </div>
 
-      {sheet && <DatasheetModal unit={sheet.unit} models={sheet.models} loadout={sheet.loadout} allOptions={sheet.all} onClose={() => setSheet(undefined)} />}
+      {sheet && <DatasheetModal unit={sheet.unit} models={sheet.models} loadout={sheet.loadout} enhancement={sheet.enhancement} allOptions={sheet.all} onClose={() => setSheet(undefined)} />}
       {enhView && <EnhancementModal enhancement={enhView.enhancement} detachment={enhView.detachment} onClose={() => setEnhView(undefined)} />}
       {ruleModal && <ArmyRuleModal army={army} onClose={() => setRuleModal(false)} />}
       {gear && <GearModal unit={gear.unit} choice={gear.choice} onClose={() => setGear(undefined)} />}

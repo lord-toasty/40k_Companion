@@ -74,6 +74,7 @@ export interface Enhancement {
   points: number
   text?: string
   upgrade?: UpgradeRule
+  grants?: { ranged?: Weapon; ability?: Ability } // appears on the bearer's datasheet
   requires?: UnitReq // which units can carry it (ordinary enhancements; an upgrade keeps its own in `upgrade`)
   aka?: string // other name for it in a second source (leaks disagree on a couple of names)
 }

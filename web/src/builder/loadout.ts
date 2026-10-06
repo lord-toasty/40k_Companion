@@ -1,4 +1,4 @@
-import { datasheetFor, type Ability, type Datasheet, type GearChoice, type GearSlot, type Loadout, type Unit, type Weapon } from '../schema/army'
+import { datasheetFor, type Ability, type Datasheet, type Enhancement, type GearChoice, type GearSlot, type Loadout, type Unit, type Weapon } from '../schema/army'
 
 /**
  * Wargear loadouts. A unit's slots say what each model may carry; a loadout stores only the NON-default
@@ -107,6 +107,17 @@ export function resolveSheet(unit: Unit, models: number, loadout?: Loadout): Res
       .filter((w) => w.count > 0)
   const abilities: Ability[] = ds.abilities.filter((a) => !gated.has(a.name) || (have.get(a.name) ?? 0) > 0)
   return { ...ds, ranged: weapons(ds.ranged), melee: weapons(ds.melee), abilities }
+}
+
+/** A sheet with the weapon and ability an enhancement gives its bearer added (one copy: only the bearer has it). */
+export function withEnhancement(sheet: ResolvedSheet, enh?: Enhancement): ResolvedSheet {
+  const g = enh?.grants
+  if (!g) return sheet
+  return {
+    ...sheet,
+    ranged: g.ranged ? [...sheet.ranged, { ...g.ranged, count: 1 }] : sheet.ranged,
+    abilities: g.ability ? [...sheet.abilities, g.ability] : sheet.abilities,
+  }
 }
 
 /** Just the rows and ability text for one option, for its own popout. */

@@ -3,6 +3,7 @@ import type { Army } from '../../schema/army'
 import { armies } from '../index'
 import { ROLES } from '../../schema/army'
 import { entryPoints, rosterPoints, upgradeBlock } from '../../builder/points'
+import { resolveSheet, withEnhancement } from '../../builder/loadout'
 
 const a: Army = armies.custodes
 const unit = (name: string) => a.units.find((u) => u.name === name)!
@@ -118,5 +119,20 @@ describe('Epic Heroes', () => {
     const all = a.detachments.flatMap((d) => d.enhancements)
     expect(all.length).toBeGreaterThan(0)
     for (const e of all) expect(upgradeBlock(e, unit('Trajann Valoris')), e.name).toBe("Epic Heroes can't take enhancements")
+  })
+})
+
+describe('Auriferous Orb', () => {
+  it("adds a ranged weapon and its ability to the bearer's sheet", () => {
+    const orb = a.detachments.flatMap((d) => d.enhancements).find((e) => e.name === 'Auriferous Orb')!
+    const cap = unit('Shield-Captain')
+    const plain = resolveSheet(cap, 1)
+    const sheet = withEnhancement(plain, orb)
+    expect(plain.ranged.map((w) => w.name)).not.toContain('Auriferous Orb')
+    const w = sheet.ranged.find((x) => x.name === 'Auriferous Orb')!
+    expect([w.range, w.attacks, w.skill, w.strength, w.ap, w.damage]).toEqual(['12"', '3', '2+', '1', '0', '1'])
+    expect(w.keywords).toEqual(['Anti-non-Monster/Vehicle 2+', 'Devastating Wounds'])
+    expect(sheet.abilities.map((x) => x.name)).toContain('Auriferous Orb')
+    expect(withEnhancement(plain, undefined)).toBe(plain)
   })
 })

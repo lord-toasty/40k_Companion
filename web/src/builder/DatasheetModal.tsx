@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { datasheetFor, type Loadout, type Unit, type Weapon } from '../schema/army'
-import { resolveSheet } from './loadout'
+import { datasheetFor, type Enhancement, type Loadout, type Unit, type Weapon } from '../schema/army'
+import { resolveSheet, withEnhancement } from './loadout'
 
 const STAT_COLS = ['M', 'T', 'Sv', 'W', 'LD', 'OC', 'InSv', 'Base'] as const
 
@@ -41,8 +41,8 @@ export function WeaponTable({ title, weapons, skill }: { title: string; weapons:
  * `allOptions` (catalogue eye) lists every weapon and ability the unit can take, with no counts;
  * otherwise (roster eye) only what the entry's loadout carries.
  */
-export default function DatasheetModal({ unit, models, loadout, allOptions = false, onClose }: { unit: Unit; models: number; loadout?: Loadout; allOptions?: boolean; onClose: () => void }) {
-  const ds = allOptions ? datasheetFor(unit) : resolveSheet(unit, models, loadout)
+export default function DatasheetModal({ unit, models, loadout, enhancement, allOptions = false, onClose }: { unit: Unit; models: number; loadout?: Loadout; enhancement?: Enhancement; allOptions?: boolean; onClose: () => void }) {
+  const ds = allOptions ? datasheetFor(unit) : withEnhancement(resolveSheet(unit, models, loadout), enhancement)
   const hasChoices = (unit.slots ?? []).length > 0
   const cols = STAT_COLS.filter((k) => ds.stats[k] !== undefined)
   useEffect(() => {
