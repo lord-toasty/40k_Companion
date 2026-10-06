@@ -61,11 +61,18 @@ export interface Unit {
   datasheet?: Partial<Datasheet>
 }
 
+/**
+ * An Upgrade is an enhancement that non-Character units can take instead of a Character. It still takes one
+ * enhancement slot however many units carry it (each unit pays the points), up to `maxUnits` units.
+ * A unit must have all of `allKeywords`, at least one of `anyKeywords`, and none of `noKeywords`.
+ */
+export interface UpgradeRule { maxUnits: number; allKeywords?: string[]; anyKeywords?: string[]; noKeywords?: string[] }
 export interface Enhancement {
   id: string
   name: string
   points: number
   text?: string
+  upgrade?: UpgradeRule
   aka?: string // other name for it in a second source (leaks disagree on a couple of names)
 }
 export interface Stratagem { id: string; name: string; cp: number; turn: string; when: string; target: string; effect: string }

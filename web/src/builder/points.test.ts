@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Army, Roster } from '../schema/army'
 import { datasheetFor } from '../schema/army'
-import { defaultEntryPrice, detachmentBudget, entryPoints, pointsFor, rosterPoints, validate } from './points'
+import { defaultEntryPrice, detachmentBudget, enhancementLimit, entryPoints, pointsFor, rosterPoints, validate } from './points'
 
 const army: Army = {
   id: 't',
@@ -16,10 +16,11 @@ const army: Army = {
       sizes: [{ key: 'a', models: 1, points: [100, 120, 140] }],
       slots: [{ id: 's', label: 'Gear', choices: [{ id: 'plain', label: 'Plain', gear: [] }, { id: 'fancy', label: 'Fancy', gear: [], points: 10 }] }],
     },
-    { id: 'v', name: 'V', role: 'Infantry', sizes: [{ key: 'a', models: 1, points: [50] }] },
+    { id: 'v', name: 'V', role: 'Infantry', sizes: [{ key: 'a', models: 1, points: [50] }], datasheet: { keywords: ['Infantry'] } },
+    { id: 'w', name: 'W', role: 'Vehicle', sizes: [{ key: 'a', models: 1, points: [90] }], datasheet: { keywords: ['Vehicle', 'Walker'] } },
   ],
   detachments: [
-    { id: 'd', name: 'D', dp: 2, unique: { group: 'Host', text: '' }, enhancements: [{ id: 'e', name: 'E', points: 25 }, { id: 'e2', name: 'E2', points: 5 }] },
+    { id: 'd', name: 'D', dp: 2, unique: { group: 'Host', text: '' }, enhancements: [{ id: 'e', name: 'E', points: 25 }, { id: 'e2', name: 'E2', points: 5 }, { id: 'e3', name: 'E3', points: 10 }, { id: 'up', name: 'Up', points: 15, upgrade: { maxUnits: 2, anyKeywords: ['Infantry'] } }, { id: 'solo', name: 'Solo', points: 20, upgrade: { maxUnits: 1, allKeywords: ['Walker'] } }] },
     { id: 'd2', name: 'D2', dp: 2, unique: { group: 'Host', text: '' }, enhancements: [] },
   ],
 }
@@ -58,10 +59,39 @@ describe('points', () => {
     expect(validate(army, roster([entry('1')], dets, 2000))).toContain('Detachment points 4/3')
   })
   it('caps enhancements (2 at 1000 pts or less) and limits them to Characters', () => {
-    const three = roster([entry('1', 'u', 'e'), entry('2', 'u', 'e2'), entry('3', 'v', 'e')], ['d'], 1000)
+    const three = roster([entry('1', 'u', 'e'), entry('2', 'u', 'e2'), entry('3', 'u', 'e3'), entry('4', 'v', 'e')], ['d'], 1000)
     const v = validate(army, three)
     expect(v).toContain('Enhancements 3/2')
-    expect(v).toContain('V is not a Character and cannot take an enhancement')
+    expect(v).toContain("V can't take E: Only Characters can take this enhancement")
+    expect(v).toContain('Duplicate enhancement')
+  })
+  it('lets non-Characters take upgrades; one upgrade on several units is one slot and each unit pays', () => {
+    const r = roster([entry('1', 'v', 'up'), entry('2', 'v', 'up'), entry('3', 'u', 'e')], ['d'], 1000)
+    expect(validate(army, r).filter((i) => /Enhancement|Upgrade|Up|can't/.test(i))).toEqual([]) // 2 slots of 2, no complaints
+    expect(r.entries.map((e) => entryPoints(army, e, r))).toEqual([50 + 15, 50 + 15, 100 + 25])
+  })
+  it('limits an upgrade to its max units, its keywords and non-Characters', () => {
+    const over = roster([entry('1', 'v', 'up'), entry('2', 'v', 'up'), entry('3', 'v', 'up')])
+    expect(validate(army, over)).toContain('Up: max 2 units')
+    expect(validate(army, roster([entry('1', 'w', 'up')]))).toContain("W can't take Up: Infantry units only")
+    expect(validate(army, roster([entry('1', 'u', 'up')]))).toContain("U can't take Up: Infantry units only") // keywords still apply to Characters
+    expect(validate(army, roster([entry('1', 'w', 'solo'), entry('2', 'w', 'solo')]))).toContain('Solo: max 1 unit')
+    expect(validate(army, roster([entry('1', 'w', 'solo')]))).toEqual([])
+  })
+  it('an upgrade on a Character is once per army; on non-Characters it is shared up to its limit', () => {
+    const c = { ...army.units[0], datasheet: { keywords: ['Infantry', 'Character'] } }
+    const a2: Army = { ...army, units: [c, ...army.units.slice(1)] }
+    // Character + Character: once per army
+    expect(validate(a2, roster([entry('1', 'u', 'up'), entry('2', 'u', 'up')]))).toContain('Up: on a Character, so only 1 use allowed')
+    // Character + a non-Character unit: also once per army
+    expect(validate(a2, roster([entry('1', 'u', 'up'), entry('2', 'v', 'up')]))).toContain('Up: on a Character, so only 1 use allowed')
+    // a Character on its own is fine, and so are two non-Characters
+    expect(validate(a2, roster([entry('1', 'u', 'up')]))).toEqual([])
+    expect(validate(a2, roster([entry('1', 'v', 'up'), entry('2', 'v', 'up')]))).toEqual([])
+    const r = roster([entry('1', 'v', 'up')])
+    expect(enhancementLimit(a2, army.detachments[0].enhancements[3], r.entries, false)).toBe(2)
+    expect(enhancementLimit(a2, army.detachments[0].enhancements[3], r.entries, true)).toBe(1)
+    expect(enhancementLimit(a2, army.detachments[0].enhancements[3], [{ ...entry('9', 'u', 'up') }], false)).toBe(1)
   })
   it('datasheet defaults to zeros', () => {
     expect(datasheetFor(army.units[0]).stats.T).toBe('0')

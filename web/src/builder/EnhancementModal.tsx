@@ -17,7 +17,7 @@ export default function EnhancementModal({ enhancement: e, detachment, onClose }
           <button onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div className="det-info enh-modal">
-          <p className="muted small">Enhancement · {detachment} · <span className="vp">{e.points} pts</span></p>
+          <p className="muted small">{e.upgrade ? `Upgrade (up to ${e.upgrade.maxUnits} unit${e.upgrade.maxUnits === 1 ? '' : 's'})` : 'Enhancement'} · {detachment} · <span className="vp">{e.points} pts</span></p>
           {e.aka && <p className="muted small">Also listed as "{e.aka}"</p>}
           <p>{e.text ?? 'No ability text yet.'}</p>
         </div>

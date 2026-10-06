@@ -9,7 +9,7 @@ import DetachmentInfo, { DetachmentModal } from './DetachmentInfo'
 import EnhancementModal from './EnhancementModal'
 import GearModal from './GearModal'
 import { loadoutSummary, normalizeLoadout } from './loadout'
-import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, entryPoints, exportText, pointsFor, rosterPoints, selectedDetachments, validate } from './points'
+import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, selectedDetachments, upgradeBlock, validate } from './points'
 import SlotControl from './SlotControl'
 
 export default function Builder() {
@@ -199,35 +199,46 @@ export default function Builder() {
                   <ul className="ds-text">{selUnit.datasheet!.wargearOptions!.map((o) => <li key={o}>{o}</li>)}</ul>
                 </details>
               )}
-              {selUnit.role === 'Character' ? (
-                <div>
-                  <b>Enhancement</b>
-                  {!enhancements.length ? (
-                    <p className="muted small">Add a detachment first.</p>
-                  ) : (
-                    <div className="enh-list">
-                      <label className={`enh-opt ${!sel.enhancementId ? 'on' : ''}`}>
-                        <input type="radio" name="enhancement" checked={!sel.enhancementId} onChange={() => b.patchEntry(sel.uid, { enhancementId: undefined })} />
-                        <span>None</span>
-                      </label>
-                      {enhancements.map((x) => {
-                        // one of each enhancement per army
-                        const takenElsewhere = roster.entries.some((o) => o.uid !== sel.uid && o.enhancementId === x.id)
-                        return (
-                          <label key={x.id} className={`enh-opt ${sel.enhancementId === x.id ? 'on' : ''} ${takenElsewhere ? 'disabled' : ''}`}>
-                            <input type="radio" name="enhancement" disabled={takenElsewhere} checked={sel.enhancementId === x.id}
-                              onChange={() => b.patchEntry(sel.uid, { enhancementId: x.id })} />
-                            <span>{x.name} (+{x.points}){takenElsewhere ? ' · already used' : ''}<small>{x.detachment}</small></span>
-                            <Eye label={`${x.name} enhancement`} onClick={() => setEnhView({ enhancement: x, detachment: x.detachment })} />
-                          </label>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="muted small">Only Characters can take enhancements.</p>
-              )}
+              {(() => {
+                // Characters can take enhancements or upgrades; every other unit only upgrades
+                const isChar = selUnit.role === 'Character'
+                const options = enhancements.filter((x) => isChar || !!x.upgrade)
+                const noun = isChar ? 'Enhancement / upgrade' : 'Upgrade'
+                return (
+                  <div>
+                    <b>{noun}</b>
+                    {!enhancements.length ? (
+                      <p className="muted small">Add a detachment first.</p>
+                    ) : !options.length ? (
+                      <p className="muted small">None of your detachments have {isChar ? 'enhancements' : 'upgrades'}.</p>
+                    ) : (
+                      <div className="enh-list">
+                        <label className={`enh-opt ${!sel.enhancementId ? 'on' : ''}`}>
+                          <input type="radio" name="enhancement" checked={!sel.enhancementId} onChange={() => b.patchEntry(sel.uid, { enhancementId: undefined })} />
+                          <span>None</span>
+                        </label>
+                        {options.map((x) => {
+                          const holders = enhancementHolders(roster, x.id, sel.uid)
+                          const limit = enhancementLimit(army, x, holders, isChar)
+                          const used = holders.length
+                          const full = used >= limit
+                          const blocked = upgradeBlock(x, selUnit)
+                          const off = full || !!blocked
+                          const note = blocked ?? (full ? (limit === 1 ? 'already used' : `all ${limit} used`) : x.upgrade ? `upgrade ${used}/${limit} units` : '')
+                          return (
+                            <label key={x.id} className={`enh-opt ${sel.enhancementId === x.id ? 'on' : ''} ${off ? 'disabled' : ''}`}>
+                              <input type="radio" name="enhancement" disabled={off && sel.enhancementId !== x.id} checked={sel.enhancementId === x.id}
+                                onChange={() => b.patchEntry(sel.uid, { enhancementId: x.id })} />
+                              <span>{x.name} (+{x.points}){note ? ` · ${note}` : ''}<small>{x.detachment}</small></span>
+                              <Eye label={`${x.name} enhancement`} onClick={() => setEnhView({ enhancement: x, detachment: x.detachment })} />
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </aside>

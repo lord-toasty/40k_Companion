@@ -3613,7 +3613,17 @@
           "id": "solar-watch-auric-eagle",
           "name": "Auric Eagle",
           "points": 15,
-          "text": "Upgrade - Infantry or Mounted units only (not Terminator). +1 to Advance rolls and Charge rolls for this unit."
+          "text": "Upgrade - Infantry or Mounted units only (not Terminator). +1 to Advance rolls and Charge rolls for this unit.",
+          "upgrade": {
+            "maxUnits": 3,
+            "anyKeywords": [
+              "Infantry",
+              "Mounted"
+            ],
+            "noKeywords": [
+              "Terminator"
+            ]
+          }
         }
       ],
       "stratagems": [
@@ -3797,7 +3807,13 @@
           "name": "Celeritius Sentries",
           "points": 15,
           "aka": "Celeritous Sentries",
-          "text": "Upgrade - Trusted Sentinel units only. Once per phase, this unit can be targeted with Heroic Intervention even if it was already used this phase. It costs 1 CP less and can still be used on other units."
+          "text": "Upgrade - Trusted Sentinel units only. Once per phase, this unit can be targeted with Heroic Intervention even if it was already used this phase. It costs 1 CP less and can still be used on other units.",
+          "upgrade": {
+            "maxUnits": 3,
+            "allKeywords": [
+              "Trusted Sentinel"
+            ]
+          }
         }
       ],
       "stratagems": [
@@ -3975,13 +3991,25 @@
           "id": "might-of-the-moritoi-memento-moritoi",
           "name": "Memento Moritoi",
           "points": 30,
-          "text": "Upgrade, one per army - Dreadnought models only. +1 to Attacks, Strength and Damage for the bearer's melee attacks."
+          "text": "Upgrade, one per army - Dreadnought models only. +1 to Attacks, Strength and Damage for the bearer's melee attacks.",
+          "upgrade": {
+            "maxUnits": 1,
+            "allKeywords": [
+              "Dreadnought"
+            ]
+          }
         },
         {
           "id": "might-of-the-moritoi-augury-uplink",
           "name": "Augury Uplink",
           "points": 30,
-          "text": "Upgrade, one per army - Dreadnought models only. The bearer has Feel No Pain 5+."
+          "text": "Upgrade, one per army - Dreadnought models only. The bearer has Feel No Pain 5+.",
+          "upgrade": {
+            "maxUnits": 1,
+            "allKeywords": [
+              "Dreadnought"
+            ]
+          }
         }
       ],
       "stratagems": [
@@ -4065,13 +4093,26 @@
           "id": "grav-assault-force-combat-deployment",
           "name": "Combat Deployment",
           "points": 20,
-          "text": "Upgrade - Grav-Assault Transport models only. When an Adeptus Custodes unit disembarks from this model, until the end of the turn it can re-roll Charge rolls and can't be targeted by snap shooting."
+          "text": "Upgrade - Grav-Assault Transport models only. When an Adeptus Custodes unit disembarks from this model, until the end of the turn it can re-roll Charge rolls and can't be targeted by snap shooting.",
+          "upgrade": {
+            "maxUnits": 3,
+            "allKeywords": [
+              "Grav-Assault",
+              "Transport"
+            ]
+          }
         },
         {
           "id": "grav-assault-force-anti-gravitic-mobility",
           "name": "Anti-Gravitic Mobility",
           "points": 15,
-          "text": "Upgrade - Grav-Assault units only. This unit can shoot the same turn it Falls Back."
+          "text": "Upgrade - Grav-Assault units only. This unit can shoot the same turn it Falls Back.",
+          "upgrade": {
+            "maxUnits": 3,
+            "allKeywords": [
+              "Grav-Assault"
+            ]
+          }
         }
       ],
       "stratagems": [

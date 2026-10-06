@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Army } from '../../schema/army'
 import { armies } from '../index'
 import { ROLES } from '../../schema/army'
-import { entryPoints, rosterPoints } from '../../builder/points'
+import { entryPoints, rosterPoints, upgradeBlock } from '../../builder/points'
 
 const a: Army = armies.custodes
 const unit = (name: string) => a.units.find((u) => u.name === name)!
@@ -55,5 +55,28 @@ describe('Custodes data', () => {
     const roster = { armyId: 'custodes', name: 'x', limit: 2000, detachmentIds: [], entries, notes: '' }
     expect(entries.map((e) => entryPoints(a, e, roster))).toEqual([200, 230, 230])
     expect(rosterPoints(a, roster)).toBe(660)
+  })
+
+  it('tags the six upgrades and restricts them to the right units', () => {
+    const enh = (name: string) => a.detachments.flatMap((d) => d.enhancements).find((e) => e.name === name)!
+    const ups = a.detachments.flatMap((d) => d.enhancements).filter((e) => e.upgrade)
+    expect(ups.map((e) => e.name).sort()).toEqual(['Anti-Gravitic Mobility', 'Augury Uplink', 'Auric Eagle', 'Celeritius Sentries', 'Combat Deployment', 'Memento Moritoi'])
+    const ok = (e: string, u: string) => upgradeBlock(enh(e), unit(u)) === null
+    // Infantry/Mounted, not Terminators; Characters are allowed when they match
+    expect(ok('Auric Eagle', 'Custodian Wardens')).toBe(true)
+    expect(ok('Auric Eagle', 'Vertus Praetors')).toBe(true)
+    expect(ok('Auric Eagle', 'Allarus Custodians')).toBe(false)
+    expect(ok('Auric Eagle', 'Shield-Captain')).toBe(true)
+    expect(ok('Auric Eagle', 'Shield-Captain in Allarus Terminator Armour')).toBe(false)
+    expect(ok('Auric Eagle', 'Caladius Grav-tank')).toBe(false)
+    expect(ok('Celeritius Sentries', 'Custodian Guard Sodality')).toBe(true)
+    expect(ok('Celeritius Sentries', 'Venatari with Kinetic Destroyers')).toBe(false)
+    expect(ok('Anti-Gravitic Mobility', 'Pallas Grav-attack')).toBe(true)
+    expect(ok('Combat Deployment', 'Coronus Grav-carrier')).toBe(true)
+    expect(ok('Combat Deployment', 'Pallas Grav-attack')).toBe(false)
+    expect(ok('Memento Moritoi', 'Telemon Heavy Dreadnought')).toBe(true)
+    expect(ok('Memento Moritoi', 'Caladius Grav-tank')).toBe(false)
+    expect(enh('Augury Uplink').upgrade!.maxUnits).toBe(1)
+    expect(enh('Auric Eagle').upgrade!.maxUnits).toBe(3)
   })
 })

@@ -1,4 +1,4 @@
-import { sizeOf, type Army, type Detachment, type Roster, type RosterEntry, type Unit, type UnitSize } from '../schema/army'
+import { sizeOf, type Army, type Detachment, type Enhancement, type Roster, type RosterEntry, type Unit, type UnitSize } from '../schema/army'
 import { loadoutPoints, loadoutSummary } from './loadout'
 
 export const selectedDetachments = (army: Army, roster: Roster): Detachment[] =>
@@ -36,6 +36,38 @@ export function rosterPoints(army: Army, roster: Roster): number {
 export const detachmentBudget = (army: Army, limit: number) =>
   limit <= 1000 ? Math.min(army.detachmentPointsIncursion ?? 2, army.detachmentPoints) : army.detachmentPoints
 
+/**
+ * Why this unit can't carry the enhancement, or null if it can. Ordinary enhancements are for Characters only;
+ * upgrades can go on any unit that matches their keyword requirements, Characters included.
+ */
+export function upgradeBlock(enh: Enhancement, unit: Unit): string | null {
+  const u = enh.upgrade
+  if (!u) return unit.role === 'Character' ? null : 'Only Characters can take this enhancement'
+  const kw = unit.datasheet?.keywords ?? []
+  const has = (k: string) => kw.includes(k)
+  if (u.allKeywords && !u.allKeywords.every(has)) return `${u.allKeywords.join(' + ')} units only`
+  if (u.anyKeywords && !u.anyKeywords.some(has)) return `${u.anyKeywords.join(' or ')} units only`
+  if (u.noKeywords && u.noKeywords.some(has)) return `Not ${u.noKeywords.join(' / ')} units`
+  return null
+}
+
+const isCharacter = (army: Army, e: RosterEntry) => army.units.find((u) => u.id === e.unitId)?.role === 'Character'
+
+/**
+ * How many units may carry this enhancement. Ordinary enhancements and any use on a Character are once per army;
+ * an upgrade on non-Character units can go on `maxUnits` of them (1 for the "one per army" upgrades).
+ * `holders` are the entries that carry it, `candidateIsCharacter` is the unit about to take it (if any).
+ */
+export function enhancementLimit(army: Army, enh: Enhancement, holders: RosterEntry[], candidateIsCharacter = false): number {
+  if (!enh.upgrade) return 1
+  if (candidateIsCharacter || holders.some((h) => isCharacter(army, h))) return 1
+  return enh.upgrade.maxUnits
+}
+
+/** Entries carrying this enhancement, optionally ignoring one entry (the one being edited). */
+export const enhancementHolders = (roster: Roster, id: string, exceptUid?: string) =>
+  roster.entries.filter((e) => e.enhancementId === id && e.uid !== exceptUid)
+
 export const maxEnhancements = (army: Army, limit: number) => {
   const m = army.maxEnhancements ?? { default: 4, incursion: 2 }
   return limit <= 1000 ? m.incursion : m.default
@@ -58,13 +90,29 @@ export function validate(army: Army, roster: Roster): string[] {
     if (u.maxPerList && n > u.maxPerList) issues.push(`${u.name}: max ${u.maxPerList} per list`)
   }
 
-  const enh = roster.entries.map((e) => e.enhancementId).filter(Boolean)
-  if (new Set(enh).size !== enh.length) issues.push('Duplicate enhancement')
+  // an upgrade carried by several units still uses one slot, so slots are counted per distinct enhancement
+  const all = army.detachments.flatMap((d) => d.enhancements)
+  const used = [...new Set(roster.entries.map((e) => e.enhancementId).filter((x): x is string => !!x))]
   const cap = maxEnhancements(army, roster.limit)
-  if (enh.length > cap) issues.push(`Enhancements ${enh.length}/${cap}`)
+  if (used.length > cap) issues.push(`Enhancements ${used.length}/${cap}`)
+  for (const id of used) {
+    const enh = all.find((x) => x.id === id)
+    if (!enh) continue
+    const holders = enhancementHolders(roster, id)
+    const max = enhancementLimit(army, enh, holders)
+    if (holders.length <= max) continue
+    issues.push(
+      !enh.upgrade ? 'Duplicate enhancement'
+        : max === 1 && holders.some((h) => isCharacter(army, h)) ? `${enh.name}: on a Character, so only 1 use allowed`
+        : `${enh.name}: max ${max} unit${max === 1 ? '' : 's'}`,
+    )
+  }
   for (const e of roster.entries) {
     const u = army.units.find((x) => x.id === e.unitId)
-    if (e.enhancementId && u && u.role !== 'Character') issues.push(`${u.name} is not a Character and cannot take an enhancement`)
+    const enh = all.find((x) => x.id === e.enhancementId)
+    if (!u || !enh) continue
+    const why = upgradeBlock(enh, u)
+    if (why) issues.push(`${u.name} can't take ${enh.name}: ${why}`)
   }
   return issues
 }

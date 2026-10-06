@@ -32,13 +32,13 @@ export default function DetachmentInfo({ army, detachment: d, hideName = false }
           <h5>Enhancements</h5>
           {d.enhancements.map((e) => (
             <div key={e.id} className="det-card">
-              <div className="det-card-head"><b>{e.name}</b><span className="vp">{e.points} pts</span></div>
+              <div className="det-card-head"><b>{e.name}{e.upgrade && <span className="chip">Upgrade · up to {e.upgrade.maxUnits} unit{e.upgrade.maxUnits === 1 ? '' : 's'}</span>}</b><span className="vp">{e.points} pts</span></div>
               {e.aka && <p className="muted small">Also listed as "{e.aka}"</p>}
               {e.text && <p>{e.text}</p>}
             </div>
           ))}
           <p className="muted small">
-            Characters only. Max {army.maxEnhancements?.default ?? 4} per army ({army.maxEnhancements?.incursion ?? 2} at Incursion), one of each.
+            Enhancements go on Characters, once per army. Upgrades can go on a Character (once per army) or on non-Character units (up to the unit limit shown; one slot however many units carry it, each pays the points). Max {army.maxEnhancements?.default ?? 4} slots per army ({army.maxEnhancements?.incursion ?? 2} at Incursion).
           </p>
         </div>
       )}
