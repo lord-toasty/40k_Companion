@@ -1,4 +1,4 @@
-import { sizeOf, type Army, type Detachment, type Enhancement, type Roster, type RosterEntry, type Unit, type UnitSize } from '../schema/army'
+import { sizeOf, type Army, type Detachment, type Enhancement, type UnitReq, type Roster, type RosterEntry, type Unit, type UnitSize } from '../schema/army'
 import { DISPOSITIONS, type Disposition } from '../data/matrix'
 import { loadoutPoints, loadoutSummary } from './loadout'
 
@@ -43,19 +43,23 @@ export function rosterPoints(army: Army, roster: Roster): number {
 export const detachmentBudget = (army: Army, limit: number) =>
   limit <= 1000 ? Math.min(army.detachmentPointsIncursion ?? 2, army.detachmentPoints) : army.detachmentPoints
 
+const reqBlock = (r: UnitReq, kw: string[]): string | null => {
+  const has = (k: string) => kw.includes(k)
+  if (r.allKeywords && !r.allKeywords.every(has)) return `${r.allKeywords.join(' + ')} units only`
+  if (r.anyKeywords && !r.anyKeywords.some(has)) return `${r.anyKeywords.join(' or ')} units only`
+  if (r.noKeywords && r.noKeywords.some(has)) return `Not ${r.noKeywords.join(' / ')} units`
+  return null
+}
+
 /**
  * Why this unit can't carry the enhancement, or null if it can. Ordinary enhancements are for Characters only;
  * upgrades can go on any unit that matches their keyword requirements, Characters included.
  */
 export function upgradeBlock(enh: Enhancement, unit: Unit): string | null {
-  const u = enh.upgrade
-  if (!u) return unit.role === 'Character' ? null : 'Only Characters can take this enhancement'
+  if (!enh.upgrade && unit.role !== 'Character') return 'Only Characters can take this enhancement'
   const kw = unit.datasheet?.keywords ?? []
-  const has = (k: string) => kw.includes(k)
-  if (u.allKeywords && !u.allKeywords.every(has)) return `${u.allKeywords.join(' + ')} units only`
-  if (u.anyKeywords && !u.anyKeywords.some(has)) return `${u.anyKeywords.join(' or ')} units only`
-  if (u.noKeywords && u.noKeywords.some(has)) return `Not ${u.noKeywords.join(' / ')} units`
-  return null
+  if (kw.includes('Epic Hero')) return "Epic Heroes can't take enhancements"
+  return (enh.upgrade && reqBlock(enh.upgrade, kw)) || (enh.requires && reqBlock(enh.requires, kw)) || null
 }
 
 const isCharacter = (army: Army, e: RosterEntry) => army.units.find((u) => u.id === e.unitId)?.role === 'Character'

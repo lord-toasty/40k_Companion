@@ -155,6 +155,13 @@ describe('loadout behaviour', () => {
     expect(has('spear-shield').abilities.map((a) => a.name)).toContain('Praesidium Shield')
     expect(has('blade-shield').abilities.map((a) => a.name)).toContain('Praesidium Shield')
     expect(has('axe').abilities.map((a) => a.name)).not.toContain('Praesidium Shield')
+    // spear or blade can be run without the shield, and then no shield points are paid
+    for (const noShield of ['spear', 'blade']) {
+      expect(has(noShield).abilities.map((a) => a.name)).not.toContain('Praesidium Shield')
+      expect(loadoutPoints(s, 1, selectChoice(s, 1, undefined, 'loadout', noShield))).toBe(0)
+    }
+    expect(rowNames(has('spear').melee)).toEqual(['Pyrithite Spear x1'])
+    expect(rowNames(has('blade').melee)).toEqual(['Eternity-pattern Paragon Blade x1'])
     expect(has('guardian').abilities.map((a) => a.name)).not.toContain('Praesidium Shield')
     expect(rowNames(resolveSheet(s, 1).melee)).toEqual(['Pyrithite Spear x1'])
     expect(loadoutPoints(s, 1)).toBe(25)

@@ -66,13 +66,15 @@ export interface Unit {
  * enhancement slot however many units carry it (each unit pays the points), up to `maxUnits` units.
  * A unit must have all of `allKeywords`, at least one of `anyKeywords`, and none of `noKeywords`.
  */
-export interface UpgradeRule { maxUnits: number; allKeywords?: string[]; anyKeywords?: string[]; noKeywords?: string[] }
+export interface UnitReq { allKeywords?: string[]; anyKeywords?: string[]; noKeywords?: string[] }
+export interface UpgradeRule extends UnitReq { maxUnits: number }
 export interface Enhancement {
   id: string
   name: string
   points: number
   text?: string
   upgrade?: UpgradeRule
+  requires?: UnitReq // which units can carry it (ordinary enhancements; an upgrade keeps its own in `upgrade`)
   aka?: string // other name for it in a second source (leaks disagree on a couple of names)
 }
 export interface Stratagem { id: string; name: string; cp: number; turn: string; when: string; target: string; effect: string }

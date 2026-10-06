@@ -21,13 +21,16 @@ const axeOrSpear = (): GearSlot =>
   swap('melee', 'Spear or axe', c('spear', 'Guardian Spear', 'Guardian Spear'), c('axe', 'Castellan Axe', 'Castellan Axe'))
 
 export const custodesSlots: Record<string, GearSlot[]> = {
-  // The Pyrithite Spear and Paragon Blade keep the Praesidium Shield (+25 pts); the Axe and Guardian Spear drop it.
+  // The Praesidium Shield costs +25 pts and is only paid for in the "+ Praesidium Shield" choices. The Pyrithite Spear
+  // and Paragon Blade can also be run without it (no extra points); the Axe and Guardian Spear never come with it.
   'shield-captain': [
     swap(
       'loadout',
       'Weapon & shield',
       { ...c('spear-shield', 'Pyrithite Spear + Praesidium Shield', 'Pyrithite Spear', 'Praesidium Shield'), points: 25 },
       { ...c('blade-shield', 'Eternity-pattern Paragon Blade + Praesidium Shield', 'Eternity-pattern Paragon Blade', 'Praesidium Shield'), points: 25 },
+      c('spear', 'Pyrithite Spear (no shield)', 'Pyrithite Spear'),
+      c('blade', 'Eternity-pattern Paragon Blade (no shield)', 'Eternity-pattern Paragon Blade'),
       c('axe', 'Castellan Axe', 'Castellan Axe'),
       c('guardian', 'Guardian Spear', 'Guardian Spear'),
     ),

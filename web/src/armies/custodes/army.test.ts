@@ -91,3 +91,32 @@ describe('Custodes dispositions', () => {
     for (const x of a.detachments) expect(x.dispositions?.length, x.name).toBeGreaterThan(0)
   })
 })
+
+describe('Custodes enhancement restrictions', () => {
+  const enh = (name: string) => a.detachments.flatMap((d) => d.enhancements).find((e) => e.name === name)!
+  const ok = (e: string, u: string) => upgradeBlock(enh(e), unit(u)) === null
+  it('limits Lightning Descent and Leonine Ferocity to the Terminator-armour Shield-Captain', () => {
+    for (const e of ['Lightning Descent', 'Leonine Ferocity']) {
+      expect(ok(e, 'Shield-Captain in Allarus Terminator Armour')).toBe(true)
+      expect(ok(e, 'Shield-Captain')).toBe(false)
+      expect(ok(e, 'Shield-Captain on Dawneagle Jetbike')).toBe(false)
+      expect(ok(e, 'Blade Champion')).toBe(false)
+    }
+  })
+  it('limits "Infantry models only", "Shield-Captain only" and Anathema Psykana enhancements', () => {
+    expect(ok('Radiant Mantle', 'Blade Champion')).toBe(true)
+    expect(ok('Radiant Mantle', 'Shield-Captain on Dawneagle Jetbike')).toBe(false) // Mounted
+    expect(ok('Sally Forth', 'Shield-Captain')).toBe(true)
+    expect(ok('Sally Forth', 'Blade Champion')).toBe(false)
+    expect(ok('Oblivion Knight', 'Knight-Centura')).toBe(true)
+    expect(ok('Oblivion Knight', 'Shield-Captain')).toBe(false)
+  })
+})
+
+describe('Epic Heroes', () => {
+  it("can't take enhancements or upgrades", () => {
+    const all = a.detachments.flatMap((d) => d.enhancements)
+    expect(all.length).toBeGreaterThan(0)
+    for (const e of all) expect(upgradeBlock(e, unit('Trajann Valoris')), e.name).toBe("Epic Heroes can't take enhancements")
+  })
+})
