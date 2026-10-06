@@ -2,6 +2,7 @@
   "id": "custodes",
   "name": "Adeptus Custodes",
   "detachmentPoints": 3,
+  "detachmentPointsIncursion": 2,
   "maxEnhancements": {
     "default": 4,
     "incursion": 2

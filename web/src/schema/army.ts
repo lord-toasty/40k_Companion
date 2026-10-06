@@ -86,6 +86,7 @@ export interface Army {
   id: string
   name: string
   detachmentPoints: number // DP budget, e.g. 3
+  detachmentPointsIncursion?: number // DP budget at Incursion (1000 pts or fewer); 2 if unset
   maxEnhancements?: { default: number; incursion: number } // incursion = 1000 pts or fewer
   armyRule?: NamedRule
   armyRuleKeywords?: string[] // keyword definitions to show under the army rule (terms from keywordDefinitions)

@@ -9,7 +9,7 @@ import DetachmentInfo, { DetachmentModal } from './DetachmentInfo'
 import EnhancementModal from './EnhancementModal'
 import GearModal from './GearModal'
 import { loadoutSummary, normalizeLoadout } from './loadout'
-import { copyNumber, defaultEntryPrice, detachmentPointsUsed, entryPoints, exportText, pointsFor, rosterPoints, selectedDetachments, validate } from './points'
+import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, entryPoints, exportText, pointsFor, rosterPoints, selectedDetachments, validate } from './points'
 import SlotControl from './SlotControl'
 
 export default function Builder() {
@@ -28,6 +28,7 @@ export default function Builder() {
 
   const total = rosterPoints(army, roster)
   const dp = detachmentPointsUsed(army, roster)
+  const dpBudget = detachmentBudget(army, roster.limit)
   const dpUnknown = army.detachments.some((d) => d.dp === undefined)
   const issues = validate(army, roster)
   const dets = selectedDetachments(army, roster)
@@ -71,7 +72,7 @@ export default function Builder() {
             </>
           )}
           <h3 className="panel-title">
-            Detachment <span className={`badge ${dp > army.detachmentPoints ? 'bad' : ''}`}>{dp} / {army.detachmentPoints} DP</span>
+            Detachment <span className={`badge ${dp > dpBudget ? 'bad' : ''}`}>{dp} / {dpBudget} DP</span>
           </h3>
           {dpUnknown && <p className="muted small">DP costs aren't in the source yet, so they count as 0.</p>}
           <ul className="rows">

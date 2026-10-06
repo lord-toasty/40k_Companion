@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Army, Roster } from '../schema/army'
 import { datasheetFor } from '../schema/army'
-import { defaultEntryPrice, entryPoints, pointsFor, rosterPoints, validate } from './points'
+import { defaultEntryPrice, detachmentBudget, entryPoints, pointsFor, rosterPoints, validate } from './points'
 
 const army: Army = {
   id: 't',
@@ -46,8 +46,16 @@ describe('points', () => {
     const v = validate(army, roster([entry('1', 'u', 'e'), entry('2', 'u', 'e')], ['d', 'd2'], 200))
     expect(v).toContain('Over limit by 70 pts') // (100 + 25) + (120 + 25) = 270 against a 200 limit
     expect(v).toContain('Duplicate enhancement')
-    expect(v).toContain('Detachment points 4/3')
+    expect(v).toContain('Detachment points 4/2') // a 200 pt game is under the 1000 pt Incursion line
     expect(v).toContain('Only one Host detachment allowed')
+  })
+  it('allows 2 detachment points at 1000 pts or less and 3 above', () => {
+    const dets = ['d', 'd2']
+    expect(detachmentBudget(army, 500)).toBe(2)
+    expect(detachmentBudget(army, 1000)).toBe(2)
+    expect(detachmentBudget(army, 1001)).toBe(3)
+    expect(detachmentBudget(army, 2000)).toBe(3)
+    expect(validate(army, roster([entry('1')], dets, 2000))).toContain('Detachment points 4/3')
   })
   it('caps enhancements (2 at 1000 pts or less) and limits them to Characters', () => {
     const three = roster([entry('1', 'u', 'e'), entry('2', 'u', 'e2'), entry('3', 'v', 'e')], ['d'], 1000)

@@ -32,6 +32,10 @@ export function rosterPoints(army: Army, roster: Roster): number {
   return roster.entries.reduce((a, e) => a + entryPoints(army, e, roster), 0)
 }
 
+/** Detachment Point budget for a points limit: smaller games (1000 pts or fewer) get fewer. */
+export const detachmentBudget = (army: Army, limit: number) =>
+  limit <= 1000 ? Math.min(army.detachmentPointsIncursion ?? 2, army.detachmentPoints) : army.detachmentPoints
+
 export const maxEnhancements = (army: Army, limit: number) => {
   const m = army.maxEnhancements ?? { default: 4, incursion: 2 }
   return limit <= 1000 ? m.incursion : m.default
@@ -42,7 +46,8 @@ export function validate(army: Army, roster: Roster): string[] {
   const total = rosterPoints(army, roster)
   if (total > roster.limit) issues.push(`Over limit by ${total - roster.limit} pts`)
   const dp = detachmentPointsUsed(army, roster)
-  if (dp > army.detachmentPoints) issues.push(`Detachment points ${dp}/${army.detachmentPoints}`)
+  const budget = detachmentBudget(army, roster.limit)
+  if (dp > budget) issues.push(`Detachment points ${dp}/${budget}`)
 
   const groups = new Map<string, number>()
   for (const d of selectedDetachments(army, roster)) if (d.unique) groups.set(d.unique.group, (groups.get(d.unique.group) ?? 0) + 1)
