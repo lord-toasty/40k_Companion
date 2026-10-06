@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import type { Loadout, Unit, Weapon } from '../schema/army'
+import { datasheetFor, type Loadout, type Unit, type Weapon } from '../schema/army'
 import { resolveSheet } from './loadout'
 
 const STAT_COLS = ['M', 'T', 'Sv', 'W', 'LD', 'OC', 'InSv', 'Base'] as const
@@ -37,8 +37,13 @@ export function WeaponTable({ title, weapons, skill }: { title: string; weapons:
   )
 }
 
-export default function DatasheetModal({ unit, models, loadout, onClose }: { unit: Unit; models: number; loadout?: Loadout; onClose: () => void }) {
-  const ds = resolveSheet(unit, models, loadout)
+/**
+ * `allOptions` (catalogue eye) lists every weapon and ability the unit can take, with no counts;
+ * otherwise (roster eye) only what the entry's loadout carries.
+ */
+export default function DatasheetModal({ unit, models, loadout, allOptions = false, onClose }: { unit: Unit; models: number; loadout?: Loadout; allOptions?: boolean; onClose: () => void }) {
+  const ds = allOptions ? datasheetFor(unit) : resolveSheet(unit, models, loadout)
+  const hasChoices = (unit.slots ?? []).length > 0
   const cols = STAT_COLS.filter((k) => ds.stats[k] !== undefined)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -54,6 +59,8 @@ export default function DatasheetModal({ unit, models, loadout, onClose }: { uni
           <h2>{unit.name}</h2>
           <button onClick={onClose} aria-label="Close">✕</button>
         </div>
+
+        {hasChoices && <p className="muted small ds-mode">{allOptions ? 'Showing all wargear options.' : 'Showing the equipped loadout only.'}</p>}
 
         <Section title="Models" summary={`(${models})`}>
           <table className="ds-table ds-stats">

@@ -243,3 +243,5 @@ p.composition { margin: .5rem 0; }
 .hand-table tr:hover, .hand-table tr:focus { background: #2c313a; outline: none; }
 .hand-table tr:last-child td { border-bottom: none; }
 .sec-tabs { margin: 0; padding: .5rem 1rem 0; background: #14161a; }
+
+.ds-mode { margin: .4rem .25rem 0; }
