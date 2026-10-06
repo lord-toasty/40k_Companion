@@ -83,7 +83,16 @@ describe('loadout behaviour', () => {
     expect(rowNames(r.ranged)).toEqual(['Castellan Axe x1', 'Guardian Spear x2'])
     expect(rowNames(r.melee)).toEqual(['Castellan Axe x1', 'Guardian Spear x2'])
     expect(r.abilities.map((a) => a.name)).not.toContain('Vexilla')
-    expect(loadoutSummary(w, 3, l)).toEqual(['Castellan Axe'])
+    expect(loadoutSummary(w, 3, l)).toEqual(['2 Guardian Spear', '1 Castellan Axe'])
+  })
+
+  it('summarises the default loadout too, leaving out empty choices', () => {
+    const w = unit('Custodian Wardens')
+    expect(loadoutSummary(w, 3)).toEqual(['3 Guardian Spear']) // no Vexilla by default
+    const withV = setChoiceCount(w, 3, undefined, 'vexilla', 'vexilla', 1)
+    expect(loadoutSummary(w, 3, withV)).toEqual(['3 Guardian Spear', '1 Vexilla'])
+    expect(loadoutSummary(unit('Shield-Captain'), 1)).toEqual(['Pyrithite Spear + Praesidium Shield'])
+    expect(loadoutSummary(unit('Trajann Valoris'), 1)).toEqual([]) // nothing to choose
   })
 
   it('hides a weapon completely when no model carries it', () => {

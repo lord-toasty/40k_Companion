@@ -70,14 +70,18 @@ export const loadoutPoints = (unit: Unit, models: number, loadout?: Loadout): nu
   }, 0)
 }
 
-/** Human summary of what differs from the default, e.g. ["1 Castellan Axe", "Vexilla"]. */
+/**
+ * What the unit carries, default choices included, e.g. ["2 Guardian Spear", "1 Castellan Axe", "Vexilla"].
+ * Choices that carry nothing (the "no vexilla" default) are left out, and multi-model units show counts.
+ */
 export function loadoutSummary(unit: Unit, models: number, loadout?: Loadout): string[] {
   const l = normalizeLoadout(unit, models, loadout)
   const out: string[] = []
   for (const slot of unit.slots ?? []) {
-    for (const [id, n] of Object.entries(l[slot.id] ?? {})) {
-      const c = slot.choices.find((x) => x.id === id)!
-      out.push(models > 1 && n > 1 ? `${n} ${c.label}` : c.label)
+    const counts = slotCounts(slot, models, l)
+    for (const c of slot.choices) {
+      const n = counts[c.id] ?? 0
+      if (n > 0 && c.gear.length) out.push(models > 1 ? `${n} ${c.label}` : c.label)
     }
   }
   return out
