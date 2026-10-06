@@ -10,6 +10,10 @@ export default function DetachmentInfo({ army, detachment: d, hideName = false }
         <span className="badge">{d.dp === undefined ? 'DP ?' : `${d.dp} DP`}</span>
       </div>
 
+      {d.dispositions && d.dispositions.length > 0 && (
+        <p className="muted small"><b>Disposition:</b> {d.dispositions.join(' / ')}</p>
+      )}
+
       {d.rule && (
         <div className="det-block">
           <h5>Detachment rule</h5>

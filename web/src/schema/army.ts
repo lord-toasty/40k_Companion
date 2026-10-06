@@ -77,9 +77,12 @@ export interface Enhancement {
 }
 export interface Stratagem { id: string; name: string; cp: number; turn: string; when: string; target: string; effect: string }
 export interface NamedRule { name: string; text: string }
+import type { Disposition } from '../data/matrix'
+
 export interface Detachment {
   id: string
   name: string
+  dispositions?: Disposition[] // which dispositions this detachment supports (a list picks one of the union)
   dp?: number // Detachment Point cost; undefined while unknown
   rule?: NamedRule
   favouredKatah?: NamedRule | null
@@ -115,6 +118,7 @@ export interface Roster {
   name: string
   limit: number
   detachmentIds: string[]
+  disposition?: Disposition // chosen from the dispositions of the selected detachments
   entries: RosterEntry[]
   notes: string
 }

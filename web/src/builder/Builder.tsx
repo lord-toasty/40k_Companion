@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { Disposition } from '../data/matrix'
 import { armies, armyList } from '../armies'
 import Eye from '../components/Eye'
 import { ROLES, ROLE_LABELS, sizeName, sizeOf, type Detachment, type Enhancement, type GearChoice, type Loadout, type Unit } from '../schema/army'
@@ -9,7 +10,7 @@ import DetachmentInfo, { DetachmentModal } from './DetachmentInfo'
 import EnhancementModal from './EnhancementModal'
 import GearModal from './GearModal'
 import { loadoutSummary, normalizeLoadout } from './loadout'
-import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, selectedDetachments, upgradeBlock, validate } from './points'
+import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, dispositionOptions, selectedDetachments, upgradeBlock, validate } from './points'
 import SlotControl from './SlotControl'
 
 export default function Builder() {
@@ -33,12 +34,17 @@ export default function Builder() {
   const issues = validate(army, roster)
   const dets = selectedDetachments(army, roster)
   const enhancements = dets.flatMap((d) => d.enhancements.map((e) => ({ ...e, detachment: d.name })))
+  const dispOptions = dispositionOptions(army, roster)
   const sel = roster.entries.find((e) => e.uid === selected)
   const selUnit = sel && army.units.find((u) => u.id === sel.unitId)
   const infoDet = army.detachments.find((d) => d.id === selectedDet)
 
-  const toggleDet = (id: string) =>
-    b.update({ detachmentIds: roster.detachmentIds.includes(id) ? roster.detachmentIds.filter((x) => x !== id) : [...roster.detachmentIds, id] })
+  const toggleDet = (id: string) => {
+    const detachmentIds = roster.detachmentIds.includes(id) ? roster.detachmentIds.filter((x) => x !== id) : [...roster.detachmentIds, id]
+    // drop a chosen disposition the remaining detachments no longer support
+    const still = dispositionOptions(army, { ...roster, detachmentIds })
+    b.update({ detachmentIds, disposition: roster.disposition && still.includes(roster.disposition) ? roster.disposition : undefined })
+  }
   const pickEntry = (uid: string) => { setSelected(uid); setSelectedDet(undefined); setRuleSelected(false) }
   const pickDet = (id: string) => { setSelectedDet(id); setSelected(undefined); setRuleSelected(false) }
   const pickRule = () => { setRuleSelected(true); setSelected(undefined); setSelectedDet(undefined) }
@@ -74,6 +80,13 @@ export default function Builder() {
           <h3 className="panel-title">
             Detachment <span className={`badge ${dp > dpBudget ? 'bad' : ''}`}>{dp} / {dpBudget} DP</span>
           </h3>
+          <label className="disp-pick">
+            <span>Disposition:</span>
+            <select value={roster.disposition ?? ''} disabled={!dispOptions.length} onChange={(e) => b.update({ disposition: (e.target.value || undefined) as Disposition | undefined })} aria-label="Disposition">
+              <option value="">{dispOptions.length ? 'Choose...' : 'Pick a detachment first'}</option>
+              {dispOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </label>
           {dpUnknown && <p className="muted small">DP costs aren't in the source yet, so they count as 0.</p>}
           <ul className="rows">
             {army.detachments.map((d) => (

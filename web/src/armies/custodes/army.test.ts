@@ -80,3 +80,14 @@ describe('Custodes data', () => {
     expect(enh('Auric Eagle').upgrade!.maxUnits).toBe(3)
   })
 })
+
+describe('Custodes dispositions', () => {
+  it('tags every detachment with the dispositions from the list', () => {
+    const d = (name: string) => a.detachments.find((x) => x.name === name)?.dispositions
+    expect(d('Guardians of the Throne')).toEqual(['Priority Assets', 'Purge the Foe'])
+    expect(d('Aquilan Shield')).toEqual(['Take and Hold'])
+    expect(d('Null Maiden Vigil')).toEqual(['Disruption'])
+    expect(d('Grav-Assault Force')).toEqual(['Reconnaissance'])
+    for (const x of a.detachments) expect(x.dispositions?.length, x.name).toBeGreaterThan(0)
+  })
+})

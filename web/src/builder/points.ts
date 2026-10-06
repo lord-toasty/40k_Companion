@@ -1,8 +1,15 @@
 import { sizeOf, type Army, type Detachment, type Enhancement, type Roster, type RosterEntry, type Unit, type UnitSize } from '../schema/army'
+import { DISPOSITIONS, type Disposition } from '../data/matrix'
 import { loadoutPoints, loadoutSummary } from './loadout'
 
 export const selectedDetachments = (army: Army, roster: Roster): Detachment[] =>
   army.detachments.filter((d) => roster.detachmentIds.includes(d.id))
+
+/** Dispositions the selected detachments allow, in the usual order. */
+export const dispositionOptions = (army: Army, roster: Roster): Disposition[] => {
+  const have = new Set(selectedDetachments(army, roster).flatMap((d) => d.dispositions ?? []))
+  return DISPOSITIONS.filter((d) => have.has(d))
+}
 
 export const detachmentPointsUsed = (army: Army, roster: Roster) =>
   selectedDetachments(army, roster).reduce((a, d) => a + (d.dp ?? 0), 0)
@@ -123,6 +130,7 @@ export function exportText(army: Army, roster: Roster): string {
   const lines = [
     `${roster.name} (${rosterPoints(army, roster)}/${roster.limit} pts)`,
     `${army.name}${dets.length ? ' - ' + dets.map((d) => d.name).join(', ') : ''}`,
+    ...(roster.disposition ? [`Disposition: ${roster.disposition}`] : []),
     '',
   ]
   for (const e of roster.entries) {

@@ -3090,7 +3090,11 @@
           ]
         }
       ],
-      "dp": 3
+      "dp": 3,
+      "dispositions": [
+        "Priority Assets",
+        "Purge the Foe"
+      ]
     },
     {
       "id": "aquilan-shield",
@@ -3193,7 +3197,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Take and Hold"
+      ]
     },
     {
       "id": "emperors-chosen",
@@ -3291,7 +3298,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Priority Assets"
+      ]
     },
     {
       "id": "emissaries-imperatus",
@@ -3389,7 +3399,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Priority Assets"
+      ]
     },
     {
       "id": "dread-host",
@@ -3487,7 +3500,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Purge the Foe"
+      ]
     },
     {
       "id": "shadowkeepers",
@@ -3585,7 +3601,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Purge the Foe"
+      ]
     },
     {
       "id": "solar-watch",
@@ -3694,7 +3713,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Reconnaissance"
+      ]
     },
     {
       "id": "auric-champions",
@@ -3786,7 +3808,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Purge the Foe"
+      ]
     },
     {
       "id": "honoured-companions",
@@ -3885,7 +3910,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Take and Hold"
+      ]
     },
     {
       "id": "lions-of-the-emperor",
@@ -3977,7 +4005,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Disruption"
+      ]
     },
     {
       "id": "might-of-the-moritoi",
@@ -4079,7 +4110,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Take and Hold"
+      ]
     },
     {
       "id": "grav-assault-force",
@@ -4183,7 +4217,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Reconnaissance"
+      ]
     },
     {
       "id": "null-maiden-vigil",
@@ -4279,7 +4316,10 @@
           ]
         }
       ],
-      "dp": 1
+      "dp": 1,
+      "dispositions": [
+        "Disruption"
+      ]
     }
   ]
 }

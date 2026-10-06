@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Army, Roster } from '../schema/army'
 import { datasheetFor } from '../schema/army'
-import { defaultEntryPrice, detachmentBudget, enhancementLimit, entryPoints, pointsFor, rosterPoints, validate } from './points'
+import { defaultEntryPrice, detachmentBudget, dispositionOptions, enhancementLimit, entryPoints, pointsFor, rosterPoints, validate } from './points'
 
 const army: Army = {
   id: 't',
@@ -95,5 +95,17 @@ describe('points', () => {
   })
   it('datasheet defaults to zeros', () => {
     expect(datasheetFor(army.units[0]).stats.T).toBe('0')
+  })
+})
+
+describe('dispositions', () => {
+  it('offers the union of the selected detachments dispositions in standard order', () => {
+    const a: Army = { ...army, detachments: [
+      { ...army.detachments[0], dispositions: ['Priority Assets', 'Purge the Foe'] },
+      { ...army.detachments[1], dispositions: ['Take and Hold'] },
+    ] }
+    expect(dispositionOptions(a, roster([], []))).toEqual([])
+    expect(dispositionOptions(a, roster([], ['d']))).toEqual(['Purge the Foe', 'Priority Assets'])
+    expect(dispositionOptions(a, roster([], ['d', 'd2']))).toEqual(['Purge the Foe', 'Take and Hold', 'Priority Assets'])
   })
 })
