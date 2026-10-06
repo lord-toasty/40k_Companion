@@ -1160,7 +1160,7 @@
         "abilities": [
           {
             "name": "Dread Foe",
-            "text": "This unit's melee attacks that target a unit (excluding Monster/Vehicle units) have -1 AP. (As written in the leaked transcription - the wording looks garbled, check the codex.)"
+            "text": "This unit's melee attacks that target a unit (excluding Monster/Vehicle units) have +1 AP."
           }
         ],
         "wargearOptions": [],
