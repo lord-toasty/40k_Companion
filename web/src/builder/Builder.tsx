@@ -100,7 +100,7 @@ export default function Builder() {
                     return (
                       <li key={u.id}>
                         <Eye label={`${u.name} datasheet`} onClick={() => setSheet({ unit: u, models: u.sizes[0].models, all: true })} />
-                        <span>{u.name}</span>
+                        <span>{u.name}{copies > 0 && <b className="in-roster"> (x{copies})</b>}</span>
                         <small className="pts" title={u.sizes.map((s) => `${sizeName(s)} models: ${defaultEntryPrice(u, s, copies + 1)} pts`).join('\n')}>
                           {full ? 'max' : u.sizes.map((s) => defaultEntryPrice(u, s, copies + 1)).join(' / ')}
                         </small>
