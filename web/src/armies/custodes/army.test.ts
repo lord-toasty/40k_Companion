@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Army } from '../../schema/army'
+import type { Army, Unit } from '../../schema/army'
 import { armies } from '../index'
 import { ROLES } from '../../schema/army'
-import { entryPoints, rosterPoints, upgradeBlock } from '../../builder/points'
+import { entryPoints, isLeader, leadTargets, rosterPoints, upgradeBlock } from '../../builder/points'
 import { resolveSheet, withEnhancement } from '../../builder/loadout'
 
 const a: Army = armies.custodes
@@ -134,5 +134,52 @@ describe('Auriferous Orb', () => {
     expect(w.keywords).toEqual(['Anti-non-Monster/Vehicle 2+', 'Devastating Wounds'])
     expect(sheet.abilities.map((x) => x.name)).toContain('Auriferous Orb')
     expect(withEnhancement(plain, undefined)).toBe(plain)
+  })
+})
+
+describe('Custodes leaders', () => {
+  const targets = (leader: string) => {
+    const entries = a.units.map((u, i) => ({ uid: String(i), unitId: u.id, sizeKey: u.sizes[0].key }))
+    const roster = { armyId: 'custodes', name: 'x', limit: 2000, detachmentIds: [], entries, notes: '' }
+    return leadTargets(a, roster, unit(leader)).map((e) => a.units[+e.uid].name)
+  }
+  it('describes on each Leader sheet exactly the units it can lead', () => {
+    const leaders = a.units.filter((u) => u.leads)
+    expect(leaders.map((u) => u.name).sort()).toEqual(['Blade Champion', 'Knight-Centura', 'Shield-Captain', 'Shield-Captain in Allarus Terminator Armour', 'Shield-Captain on Dawneagle Jetbike', 'Trajann Valoris'])
+    for (const l of leaders) {
+      const can = new Set(targets(l.name))
+      for (const u of a.units.filter((x) => x.role !== 'Character')) {
+        const mentioned = (l.leadsText ?? '').includes(u.name)
+        expect(mentioned, `${l.name} / ${u.name}`).toBe(can.has(u.name))
+      }
+    }
+  })
+  it('lets the Allarus Captain lead Terminators only', () => {
+    expect(targets('Shield-Captain in Allarus Terminator Armour').sort()).toEqual(
+      ['Allarus Custodians', 'Aquilon Terminators with Solarite Power Gauntlets', 'Aquilon Terminators with Solarite Power Talons'])
+  })
+  it('lets the Shield-Captain and Blade Champion lead normal Infantry only', () => {
+    for (const l of ['Shield-Captain', 'Blade Champion']) {
+      const t = targets(l)
+      expect(t.sort(), l).toEqual(['Custodian Guard Sodality', 'Custodian Wardens', 'Sentinel Guard Sodality'])
+    }
+    const t = targets('Shield-Captain')
+    expect(t).not.toContain('Venatari with Kinetic Destroyers')
+    expect(t).not.toContain('Venatari with Verutum Lances')
+    expect(t).not.toContain('Allarus Custodians')
+    expect(t).not.toContain('Prosecutor Squad')
+    expect(t).not.toContain('Vertus Praetors')
+  })
+  it('lets the Knight-Centura lead the Sisters Infantry units only', () => {
+    expect(targets('Knight-Centura').sort()).toEqual(['Prosecutor Squad', 'Vigilator Squad', 'Witchseeker Squad'])
+    expect(isLeader(unit('Knight-Centura'))).toBe(true)
+  })
+  it('lets Trajann lead any Custodes Infantry except Sisters and Venatari, and the Jetbike Captain lead the Mounted units', () => {
+    const t = targets('Trajann Valoris')
+    expect(t).toEqual(expect.arrayContaining(['Allarus Custodians', 'Custodian Wardens', 'Custodian Guard Sodality', 'Sentinel Guard Sodality']))
+    for (const no of ['Prosecutor Squad', 'Vigilator Squad', 'Witchseeker Squad', 'Venatari with Kinetic Destroyers', 'Venatari with Verutum Lances']) expect(t).not.toContain(no)
+    expect(t).not.toContain('Vertus Praetors')
+    expect(targets('Shield-Captain on Dawneagle Jetbike').sort()).toEqual(['Gyrfalcon Jetbike Sodality', 'Vertus Praetors'])
+    expect(unit('Shield-Captain on Dawneagle Jetbike')).toSatisfy((u: Unit) => isLeader(u))
   })
 })

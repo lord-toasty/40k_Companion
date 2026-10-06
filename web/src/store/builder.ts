@@ -28,7 +28,12 @@ export const useBuilder = create<BuilderState>()(
         update: (patch) => mut((r) => ({ ...r, ...patch })),
         addEntry: (e) => mut((r) => ({ ...r, entries: [...r.entries, { ...e, uid: crypto.randomUUID() }] })),
         patchEntry: (uid, patch) => mut((r) => ({ ...r, entries: r.entries.map((x) => (x.uid === uid ? { ...x, ...patch } : x)) })),
-        removeEntry: (uid) => mut((r) => ({ ...r, entries: r.entries.filter((x) => x.uid !== uid) })),
+        removeEntry: (uid) =>
+          mut((r) => ({
+            ...r,
+            // anyone attached to the removed unit becomes unattached
+            entries: r.entries.filter((x) => x.uid !== uid).map((x) => (x.leading === uid ? { ...x, leading: undefined } : x)),
+          })),
         reset: () => set((s) => ({ rosters: { ...s.rosters, [s.armyId]: blank(s.armyId) } })),
       }
     },

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import type { Disposition } from '../data/matrix'
 import { armies, armyList } from '../armies'
 import Eye from '../components/Eye'
-import { ROLES, ROLE_LABELS, sizeName, sizeOf, type Detachment, type Enhancement, type GearChoice, type Loadout, type Unit } from '../schema/army'
+import { ROLES, ROLE_LABELS, sizeName, sizeOf, type RosterEntry, type Detachment, type Enhancement, type GearChoice, type Loadout, type Unit } from '../schema/army'
 import { blank, useBuilder } from '../store/builder'
 import ArmyRuleInfo, { ArmyRuleModal } from './ArmyRuleInfo'
 import DatasheetModal from './DatasheetModal'
@@ -10,7 +10,7 @@ import DetachmentInfo, { DetachmentModal } from './DetachmentInfo'
 import EnhancementModal from './EnhancementModal'
 import GearModal from './GearModal'
 import { loadoutSummary, normalizeLoadout } from './loadout'
-import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, dispositionOptions, selectedDetachments, upgradeBlock, validate } from './points'
+import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, dispositionOptions, isLeader, leadersOf, leadTargets, selectedDetachments, upgradeBlock, validate } from './points'
 import SlotControl from './SlotControl'
 
 export default function Builder() {
@@ -38,6 +38,19 @@ export default function Builder() {
   const sel = roster.entries.find((e) => e.uid === selected)
   const selUnit = sel && army.units.find((u) => u.id === sel.unitId)
   const infoDet = army.detachments.find((d) => d.id === selectedDet)
+
+  /** "3 Custodian Wardens • 3 Guardian Spear", the same text in the roster and in the Leading picker. */
+  const entryLabel = (e: RosterEntry, withPts = false) => {
+    const u = army.units.find((x) => x.id === e.unitId)!
+    const s = sizeOf(u, e.sizeKey)
+    return (
+      <>
+        {s.models} {u.name}{s.label ? ` ${s.label}` : ''}
+        {withPts && <> <small className="pts">{entryPoints(army, e, roster)} pts</small></>}
+        {loadoutSummary(u, s.models, e.loadout).map((g) => <em key={g} className="sub"> • {g}</em>)}
+      </>
+    )
+  }
 
   const toggleDet = (id: string) => {
     const detachmentIds = roster.detachmentIds.includes(id) ? roster.detachmentIds.filter((x) => x !== id) : [...roster.detachmentIds, id]
@@ -144,16 +157,26 @@ export default function Builder() {
                     const u = army.units.find((x) => x.id === e.unitId)!
                     const s = sizeOf(u, e.sizeKey)
                     const enh = enhancements.find((x) => x.id === e.enhancementId)
+                    const led = roster.entries.find((x) => x.uid === e.leading)
+                    const ledUnit = led && army.units.find((x) => x.id === led.unitId)
                     return (
-                      <li key={e.uid} className={e.uid === selected ? 'on' : ''} onClick={() => pickEntry(e.uid)}>
-                        <Eye label={`${u.name} datasheet`} onClick={() => setSheet({ unit: u, models: s.models, loadout: e.loadout, enhancement: enh })} />
-                        <span className="grow">
-                          {s.models} {u.name}{s.label ? ` ${s.label}` : ''} <small className="pts">{entryPoints(army, e, roster)} pts</small>
-                          {loadoutSummary(u, s.models, e.loadout).map((g) => <em key={g} className="sub"> • {g}</em>)}
-                          {enh && <em className="sub"> • {enh.name}</em>}
-                        </span>
-                        <button onClick={(ev) => { ev.stopPropagation(); b.removeEntry(e.uid); if (selected === e.uid) setSelected(undefined) }} aria-label={`Remove ${u.name}`}>🗑</button>
-                      </li>
+                      <Fragment key={e.uid}>
+                        <li className={e.uid === selected ? 'on' : ''} onClick={() => pickEntry(e.uid)}>
+                          <Eye label={`${u.name} datasheet`} onClick={() => setSheet({ unit: u, models: s.models, loadout: e.loadout, enhancement: enh })} />
+                          <span className="grow">
+                            {entryLabel(e, true)}
+                            {enh && <em className="sub"> • {enh.name}</em>}
+                            {ledUnit && <em className="sub"> • leads {ledUnit.name}</em>}
+                          </span>
+                          <button onClick={(ev) => { ev.stopPropagation(); b.removeEntry(e.uid); if (selected === e.uid) setSelected(undefined) }} aria-label={`Remove ${u.name}`}>🗑</button>
+                        </li>
+                        {leadersOf(roster, e.uid).map((l) => (
+                          <li key={l.uid} className={`attached ${l.uid === selected ? 'on' : ''}`} onClick={() => pickEntry(l.uid)}>
+                            <span className="attach-arrow" aria-hidden="true">↳</span>
+                            <span className="grow">{army.units.find((x) => x.id === l.unitId)?.name}</span>
+                          </li>
+                        ))}
+                      </Fragment>
                     )
                   })}
                 </ul>
@@ -254,6 +277,30 @@ export default function Builder() {
                   </div>
                 )
               })()}
+
+              {isLeader(selUnit) && (
+                <div>
+                  <b>Leading</b>
+                  <div className="enh-list">
+                    <label className={`enh-opt ${!sel.leading ? 'on' : ''}`}>
+                      <input type="radio" name="leading" checked={!sel.leading} onChange={() => b.patchEntry(sel.uid, { leading: undefined })} />
+                      <span>None</span>
+                    </label>
+                    {leadTargets(army, roster, selUnit).map((t) => {
+                      const mine = sel.leading === t.uid
+                      const other = leadersOf(roster, t.uid).find((l) => l.uid !== sel.uid)
+                      const otherName = other && army.units.find((x) => x.id === other.unitId)?.name
+                      return (
+                        <label key={t.uid} className={`enh-opt ${mine ? 'on' : ''} ${other ? 'disabled' : ''}`}>
+                          <input type="radio" name="leading" disabled={!!other} checked={mine} onChange={() => b.patchEntry(sel.uid, { leading: t.uid })} />
+                          <span>{entryLabel(t)}{otherName ? <small>already led by {otherName}</small> : null}</span>
+                        </label>
+                      )
+                    })}
+                    {leadTargets(army, roster, selUnit).length === 0 && <p className="muted small">Add a unit this Character can lead.</p>}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </aside>

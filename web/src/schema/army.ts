@@ -57,6 +57,8 @@ export interface Unit {
   role: Role
   sizes: UnitSize[]
   slots?: GearSlot[]
+  leadsText?: string // the Leader rule as shown on the datasheet: which units it can be attached to
+  leads?: UnitReq // which non-Character units this Character can be attached to (default: any Infantry unit)
   maxPerList?: number
   datasheet?: Partial<Datasheet>
 }
@@ -115,6 +117,7 @@ export interface RosterEntry {
   sizeKey: string
   loadout?: Loadout
   enhancementId?: string
+  leading?: string // uid of the roster unit this Character is attached to (needs the Leader ability)
 }
 export interface Roster {
   armyId: string

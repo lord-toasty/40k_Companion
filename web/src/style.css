@@ -249,3 +249,9 @@ p.composition { margin: .5rem 0; }
 
 .disp-pick { display: flex; align-items: center; gap: .5rem; margin: 0 0 .5rem; font-size: .9rem; }
 .disp-pick select { flex: 1; min-width: 0; }
+
+/* a Character attached to a unit: indented under it with a down-then-right arrow */
+.rows li.attached { margin-left: 1.25rem; background: transparent; border-left: 2px solid #3a3f4a; border-radius: 0 4px 4px 0; padding-left: .5rem; cursor: pointer; }
+.rows li.attached:hover { background: #2c313a; }
+.rows li > .attach-arrow { flex: none; color: #b8962e; font-weight: 700; line-height: 1; }
+.rows li.attached .grow { text-align: left; }

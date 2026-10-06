@@ -79,6 +79,23 @@ export function enhancementLimit(army: Army, enh: Enhancement, holders: RosterEn
 export const enhancementHolders = (roster: Roster, id: string, exceptUid?: string) =>
   roster.entries.filter((e) => e.enhancementId === id && e.uid !== exceptUid)
 
+/** Can this unit attach to another? (Leader ability in its core abilities) */
+export const isLeader = (unit: Unit) => !!unit.leads || (unit.datasheet?.core ?? []).includes('Leader')
+
+const DEFAULT_LEADS: UnitReq = { allKeywords: ['Infantry'] }
+
+/** Roster units this leader could be attached to: non-Character units matching its `leads` keywords. */
+export function leadTargets(army: Army, roster: Roster, leader: Unit): RosterEntry[] {
+  const req = leader.leads ?? DEFAULT_LEADS
+  return roster.entries.filter((e) => {
+    const u = army.units.find((x) => x.id === e.unitId)
+    return !!u && u.role !== 'Character' && reqBlock(req, u.datasheet?.keywords ?? []) === null
+  })
+}
+
+/** Characters attached to this roster unit. */
+export const leadersOf = (roster: Roster, uid: string) => roster.entries.filter((e) => e.leading === uid)
+
 export const maxEnhancements = (army: Army, limit: number) => {
   const m = army.maxEnhancements ?? { default: 4, incursion: 2 }
   return limit <= 1000 ? m.incursion : m.default
@@ -96,6 +113,15 @@ export function validate(army: Army, roster: Roster): string[] {
   for (const d of selectedDetachments(army, roster)) if (d.unique) groups.set(d.unique.group, (groups.get(d.unique.group) ?? 0) + 1)
   for (const [g, n] of groups) if (n > 1) issues.push(`Only one ${g} detachment allowed`)
 
+  for (const e of roster.entries) {
+    if (!e.leading) continue
+    const u = army.units.find((x) => x.id === e.unitId)
+    const target = roster.entries.find((x) => x.uid === e.leading)
+    const tu = target && army.units.find((x) => x.id === target.unitId)
+    if (!u || !isLeader(u)) issues.push(`${u?.name ?? 'Unit'} can't lead a unit`)
+    else if (!target || !leadTargets(army, roster, u).some((t) => t.uid === target.uid)) issues.push(`${u.name} is attached to a unit it can't lead`)
+    else if (leadersOf(roster, target.uid).length > 1) issues.push(`${tu?.name}: only one Character can lead it`)
+  }
   for (const u of army.units) {
     const n = roster.entries.filter((e) => e.unitId === u.id).length
     if (u.maxPerList && n > u.maxPerList) issues.push(`${u.name}: max ${u.maxPerList} per list`)
@@ -146,6 +172,9 @@ export function exportText(army: Army, roster: Roster): string {
     lines.push(`${u.name} (${s.models} models${s.label ? ', ' + s.label : ''}) [${entryPoints(army, e, roster)}]`)
     if (gear.length) lines.push(`  - ${gear.join(', ')}`)
     if (enh) lines.push(`  - Enhancement: ${enh.name}`)
+    const led = roster.entries.find((x) => x.uid === e.leading)
+    const ledUnit = led && army.units.find((x) => x.id === led.unitId)
+    if (ledUnit) lines.push(`  - Leading: ${ledUnit.name}`)
   }
   if (roster.notes) lines.push('', roster.notes)
   return lines.join('\n')

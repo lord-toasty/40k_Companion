@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Army, Roster } from '../schema/army'
 import { datasheetFor } from '../schema/army'
-import { defaultEntryPrice, detachmentBudget, dispositionOptions, enhancementLimit, entryPoints, pointsFor, rosterPoints, validate } from './points'
+import { defaultEntryPrice, detachmentBudget, dispositionOptions, enhancementLimit, entryPoints, exportText, isLeader, leadersOf, leadTargets, pointsFor, rosterPoints, validate } from './points'
 
 const army: Army = {
   id: 't',
@@ -107,5 +107,31 @@ describe('dispositions', () => {
     expect(dispositionOptions(a, roster([], []))).toEqual([])
     expect(dispositionOptions(a, roster([], ['d']))).toEqual(['Purge the Foe', 'Priority Assets'])
     expect(dispositionOptions(a, roster([], ['d', 'd2']))).toEqual(['Purge the Foe', 'Take and Hold', 'Priority Assets'])
+  })
+})
+
+describe('leaders', () => {
+  const a2: Army = { ...army, units: [{ ...army.units[0], datasheet: { core: ['Leader'] } }, ...army.units.slice(1)] }
+  const led = (uid: string, unitId: string, leading?: string) => ({ ...entry(uid, unitId), leading })
+
+  it('only Leader characters can attach, and only to non-Character Infantry units', () => {
+    expect(isLeader(a2.units[0])).toBe(true)
+    expect(isLeader(a2.units[1])).toBe(false)
+    const r = roster([entry('v1', 'v'), entry('c1', 'u'), entry('t1', 'w')])
+    expect(leadTargets(a2, r, a2.units[0]).map((e) => e.uid)).toEqual(['v1']) // not the Character, not the Vehicle
+    expect(validate(a2, roster([entry('v1', 'v'), led('c1', 'u', 'v1')]))).toEqual([])
+    expect(validate(a2, roster([entry('v1', 'v'), entry('v2', 'v'), led('x', 'v', 'v2')]))).toContain("V can't lead a unit")
+    expect(validate(a2, roster([entry('t1', 'w'), led('c1', 'u', 't1')]))).toContain("U is attached to a unit it can't lead")
+  })
+
+  it('allows one Character per unit', () => {
+    const r = roster([entry('v1', 'v'), led('c1', 'u', 'v1'), led('c2', 'u', 'v1')])
+    expect(leadersOf(r, 'v1').map((e) => e.uid)).toEqual(['c1', 'c2'])
+    expect(validate(a2, r)).toContain('V: only one Character can lead it')
+  })
+
+  it('shows who leads in the export text', () => {
+    const r = roster([entry('v1', 'v'), led('c1', 'u', 'v1')])
+    expect(exportText(a2, r)).toContain('  - Leading: V')
   })
 })

@@ -201,7 +201,17 @@
           "Adeptus Custodes"
         ]
       },
-      "maxPerList": 1
+      "maxPerList": 1,
+      "leads": {
+        "allKeywords": [
+          "Infantry"
+        ],
+        "noKeywords": [
+          "Anathema Psykana",
+          "Jump Pack"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Custodian Guard Sodality, Sentinel Guard Sodality, Custodian Wardens, Allarus Custodians, Aquilon Terminators with Solarite Power Gauntlets, Aquilon Terminators with Solarite Power Talons (any Adeptus Custodes Infantry unit except Anathema Psykana and Venatari)."
     },
     {
       "id": "shield-captain",
@@ -355,7 +365,18 @@
         "factionKeywords": [
           "Adeptus Custodes*"
         ]
-      }
+      },
+      "leads": {
+        "allKeywords": [
+          "Infantry"
+        ],
+        "noKeywords": [
+          "Terminator",
+          "Anathema Psykana",
+          "Jump Pack"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Custodian Guard Sodality, Sentinel Guard Sodality, Custodian Wardens."
     },
     {
       "id": "shield-captain-in-allarus-terminator-armour",
@@ -481,7 +502,13 @@
         "factionKeywords": [
           "Adeptus Custodes"
         ]
-      }
+      },
+      "leads": {
+        "allKeywords": [
+          "Terminator"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Allarus Custodians, Aquilon Terminators with Solarite Power Gauntlets, Aquilon Terminators with Solarite Power Talons."
     },
     {
       "id": "shield-captain-on-dawneagle-jetbike",
@@ -549,7 +576,8 @@
         ],
         "weaponNotes": [],
         "core": [
-          "Deep Strike"
+          "Deep Strike",
+          "Leader"
         ],
         "armyRules": [
           "Aegis of the Emperor",
@@ -580,7 +608,13 @@
         "factionKeywords": [
           "Adeptus Custodes*"
         ]
-      }
+      },
+      "leads": {
+        "allKeywords": [
+          "Mounted"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Vertus Praetors, Gyrfalcon Jetbike Sodality."
     },
     {
       "id": "blade-champion",
@@ -678,7 +712,18 @@
         "factionKeywords": [
           "Adeptus Custodes*"
         ]
-      }
+      },
+      "leads": {
+        "allKeywords": [
+          "Infantry"
+        ],
+        "noKeywords": [
+          "Terminator",
+          "Anathema Psykana",
+          "Jump Pack"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Custodian Guard Sodality, Sentinel Guard Sodality, Custodian Wardens."
     },
     {
       "id": "sentinel-guard-sodality",
@@ -2528,7 +2573,8 @@
         "weaponNotes": [],
         "core": [
           "Scouts 7\"",
-          "Support"
+          "Support",
+          "Leader"
         ],
         "armyRules": [
           "Daughters of the Abyss"
@@ -2556,7 +2602,14 @@
         "factionKeywords": [
           "Anathema Psykana"
         ]
-      }
+      },
+      "leads": {
+        "allKeywords": [
+          "Infantry",
+          "Anathema Psykana"
+        ]
+      },
+      "leadsText": "This model can be attached to one of the following units: Prosecutor Squad, Vigilator Squad, Witchseeker Squad."
     },
     {
       "id": "prosecutor-squad",

@@ -80,7 +80,13 @@ export default function DatasheetModal({ unit, models, loadout, enhancement, all
           </ul>
         </Section>
 
-        <Section title="Rules" summary={rules.join(', ')} />
+        <Section title="Rules" summary={rules.join(', ')}>
+          {unit.leadsText && (
+            <ul className="ds-abilities">
+              <li><b>Leader</b><span>{unit.leadsText}</span></li>
+            </ul>
+          )}
+        </Section>
 
         {(ds.composition || ds.wargearOptions?.length) && (
           <Section title="Composition & options">
