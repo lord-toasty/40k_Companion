@@ -205,7 +205,7 @@ p.ds-text { padding-left: .5rem; }
 p.composition { margin: .5rem 0; }
 
 /* enhancement picker: a stacked list so long text wraps instead of spilling out of the column */
-.enh-list { display: grid; gap: .3rem; }
+.enh-list { display: grid; gap: .3rem; margin-top: .6rem; }
 .opts .enh-opt, .enh-opt { display: flex; flex-direction: row; align-items: flex-start; gap: .5rem; background: #23262d; border: 1px solid #3a3f4a; border-radius: 4px; padding: .35rem .5rem; font-size: .85rem; cursor: pointer; }
 .enh-opt.on { outline: 1px solid #b8962e; background: #2c313a; }
 .enh-opt.disabled { opacity: .5; cursor: default; }

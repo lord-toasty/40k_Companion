@@ -221,13 +221,15 @@ export default function Builder() {
                           const holders = enhancementHolders(roster, x.id, sel.uid)
                           const limit = enhancementLimit(army, x, holders, isChar)
                           const used = holders.length
-                          const full = used >= limit
+                          const mine = sel.enhancementId === x.id
+                          const full = used >= limit && !mine // the unit being edited keeps its own pick
                           const blocked = upgradeBlock(x, selUnit)
                           const off = full || !!blocked
-                          const note = blocked ?? (full ? (limit === 1 ? 'already used' : `all ${limit} used`) : x.upgrade ? `upgrade ${used}/${limit} units` : '')
+                          const count = used + (mine ? 1 : 0) // includes this unit when it has picked it
+                          const note = blocked ?? (full ? (limit === 1 ? 'already used' : `all ${limit} used`) : x.upgrade ? `${count}/${limit} units` : '')
                           return (
-                            <label key={x.id} className={`enh-opt ${sel.enhancementId === x.id ? 'on' : ''} ${off ? 'disabled' : ''}`}>
-                              <input type="radio" name="enhancement" disabled={off && sel.enhancementId !== x.id} checked={sel.enhancementId === x.id}
+                            <label key={x.id} className={`enh-opt ${mine ? 'on' : ''} ${off ? 'disabled' : ''}`}>
+                              <input type="radio" name="enhancement" disabled={off} checked={mine}
                                 onChange={() => b.patchEntry(sel.uid, { enhancementId: x.id })} />
                               <span>{x.name} (+{x.points}){note ? ` · ${note}` : ''}<small>{x.detachment}</small></span>
                               <Eye label={`${x.name} enhancement`} onClick={() => setEnhView({ enhancement: x, detachment: x.detachment })} />
