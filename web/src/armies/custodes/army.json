@@ -3216,7 +3216,7 @@
       },
       "favouredKatah": {
         "name": "Rendax",
-        "text": "Also select one enemy Monster/Vehicle unit engaged with that unit and roll a D6 to deal it mortal wounds (exact result not shown in the leaked pages)."
+        "text": "Additional effect: You can select one enemy Monster/Vehicle unit engaged with your unit and roll one D6. On a 1-2, that enemy unit suffers 1 mortal wound. On a 3-5, that enemy unit suffers D3 mortal wounds. On a 6, that enemy unit suffers 3 mortal wounds."
       },
       "unique": {
         "group": "Shield Host",
