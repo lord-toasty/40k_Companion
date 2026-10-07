@@ -1,4 +1,5 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { Disposition } from '../data/matrix'
 import { armies, armyList } from '../armies'
 import Eye from '../components/Eye'
@@ -11,12 +12,14 @@ import EnhancementModal from './EnhancementModal'
 import GearModal from './GearModal'
 import { loadoutSummary, normalizeLoadout } from './loadout'
 import { copyNumber, defaultEntryPrice, detachmentBudget, detachmentPointsUsed, enhancementHolders, enhancementLimit, entryPoints, exportText, pointsFor, rosterPoints, dispositionOptions, isLeader, leadersOf, leadTargets, selectedDetachments, upgradeBlock, validate } from './points'
+import ListMenu from './ListMenu'
+import { importAny } from './share'
 import SlotControl from './SlotControl'
 
 export default function Builder() {
   const b = useBuilder()
   const army = armies[b.armyId]
-  const roster = b.rosters[b.armyId] ?? blank(b.armyId)
+  const roster = b.rosters[b.activeId] ?? blank(b.armyId)
   const [selected, setSelected] = useState<string>() // roster entry shown in the right panel
   const [selectedDet, setSelectedDet] = useState<string>() // or a detachment shown there
   const [ruleSelected, setRuleSelected] = useState(false) // or the army rule
@@ -26,6 +29,21 @@ export default function Builder() {
   const [enhView, setEnhView] = useState<{ enhancement: Enhancement; detachment: string }>()
   const [detModal, setDetModal] = useState<Detachment>()
   const [panel, setPanel] = useState<'export' | 'notes' | undefined>()
+  const [notice, setNotice] = useState<{ ok: boolean; text: string }>()
+
+  // A share link (#/builder?l=CODE) adds its list once, then drops the code from the URL so a refresh doesn't repeat it.
+  const [params, setParams] = useSearchParams()
+  const code = params.get('l')
+  const importing = useRef('')
+  useEffect(() => {
+    if (!code || importing.current === code) return
+    importing.current = code
+    setParams({}, { replace: true })
+    importAny(code).then(
+      (r) => { setSelected(undefined); setNotice({ ok: true, text: `Imported "${r.name}".${r.skipped ? ` ${r.skipped} unit${r.skipped === 1 ? '' : 's'} skipped (no longer available).` : ''}` }) },
+      (e) => setNotice({ ok: false, text: e instanceof Error ? e.message : 'Could not import that link.' }),
+    )
+  }, [code, setParams])
 
   const total = rosterPoints(army, roster)
   const dp = detachmentPointsUsed(army, roster)
@@ -73,7 +91,9 @@ export default function Builder() {
           {[500, 1000, 2000, 3000].map((n) => <option key={n} value={n}>{n} pts</option>)}
         </select>
         <b className={total > roster.limit ? 'bad' : ''}>{total} / {roster.limit} pts</b>
+        <ListMenu />
       </section>
+      {notice && <p className={notice.ok ? 'list-msg' : 'cap-warn'} role="status" onClick={() => setNotice(undefined)}>{notice.text}</p>}
       {issues.length > 0 && <ul className="issues">{issues.map((i) => <li key={i}>{i}</li>)}</ul>}
 
       <div className="cols">

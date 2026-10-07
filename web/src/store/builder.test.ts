@@ -6,7 +6,7 @@ describe('builder store', () => {
 
   it('un-attaches a leader when the unit it leads is removed', () => {
     const b = () => useBuilder.getState()
-    const roster = () => b().rosters[b().armyId]
+    const roster = () => b().rosters[b().activeId]
     b().addEntry({ unitId: 'custodian-wardens', sizeKey: '3' })
     b().addEntry({ unitId: 'shield-captain', sizeKey: '1' })
     const [unit, leader] = roster().entries

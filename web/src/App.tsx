@@ -14,8 +14,7 @@ export default function App() {
           <NavLink to="/builder">List Builder</NavLink>
           <NavLink to="/game">Game Tracker</NavLink>
           <BuyMeCoffee small />
-        </nav>
-      </header>
+        </nav>      </header>
       <main>
         <Routes>
           <Route path="/" element={<Home />} />

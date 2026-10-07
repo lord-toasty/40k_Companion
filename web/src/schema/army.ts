@@ -127,6 +127,7 @@ export interface Roster {
   disposition?: Disposition // chosen from the dispositions of the selected detachments
   entries: RosterEntry[]
   notes: string
+  updated?: number // last edit, ms since epoch; picks the most recent list
 }
 
 export const sizeOf = (unit: Unit, key: string): UnitSize => unit.sizes.find((s) => s.key === key) ?? unit.sizes[0]
