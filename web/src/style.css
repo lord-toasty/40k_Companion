@@ -281,3 +281,13 @@ p.composition { margin: .5rem 0; }
   .list-menu { margin-left: 0; flex: 1 1 100%; }
   .list-pop { left: 0; right: auto; width: 100%; }
 }
+
+/* collapsible sections on the left */
+.fold { margin-bottom: .5rem; }
+.fold .panel-title { padding: 0; }
+.fold-head { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: .4rem; padding: .35rem 0 .3rem; cursor: pointer; color: inherit; font: inherit; -webkit-tap-highlight-color: transparent; }
+.fold-head:focus-visible { outline: 2px solid #b8962e; outline-offset: 2px; }
+.fold-title { flex: 1; text-align: left; }
+.fold-arrow { display: inline-block; transition: transform .15s; }
+.fold.shut .fold-arrow { transform: rotate(-90deg); }
+.fold.shut .panel-title { margin-bottom: 0; }

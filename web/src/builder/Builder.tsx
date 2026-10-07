@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import type { Disposition } from '../data/matrix'
 import { armies, armyList } from '../armies'
 import Eye from '../components/Eye'
+import Fold from '../components/Fold'
 import { ROLES, ROLE_LABELS, sizeName, sizeOf, type RosterEntry, type Detachment, type Enhancement, type GearChoice, type Loadout, type Unit } from '../schema/army'
 import { blank, useBuilder } from '../store/builder'
 import ArmyRuleInfo, { ArmyRuleModal } from './ArmyRuleInfo'
@@ -100,45 +101,42 @@ export default function Builder() {
         {/* LEFT: detachments + catalogue */}
         <aside className="col">
           {army.armyRule && (
-            <>
-              <h3 className="panel-title">Army Rule</h3>
+            <Fold title="Army Rule">
               <ul className="rows">
                 <li className={ruleSelected ? 'on' : ''} onClick={pickRule}>
                   <Eye label={`${army.armyRule.name} army rule`} onClick={() => setRuleModal(true)} />
                   <span>{army.armyRule.name}</span>
                 </li>
               </ul>
-            </>
+            </Fold>
           )}
-          <h3 className="panel-title">
-            Detachment <span className={`badge ${dp > dpBudget ? 'bad' : ''}`}>{dp} / {dpBudget} DP</span>
-          </h3>
-          <label className="disp-pick">
-            <span>Disposition:</span>
-            <select value={roster.disposition ?? ''} disabled={!dispOptions.length} onChange={(e) => b.update({ disposition: (e.target.value || undefined) as Disposition | undefined })} aria-label="Disposition">
-              <option value="">{dispOptions.length ? 'Choose...' : 'Pick a detachment first'}</option>
-              {dispOptions.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </label>
-          {dpUnknown && <p className="muted small">DP costs aren't in the source yet, so they count as 0.</p>}
-          <ul className="rows">
-            {army.detachments.map((d) => (
-              <li key={d.id} className={`${roster.detachmentIds.includes(d.id) ? 'chosen' : ''} ${d.id === selectedDet ? 'on' : ''}`} onClick={() => pickDet(d.id)}>
-                <Eye label={`${d.name} detachment`} onClick={() => setDetModal(d)} />
-                <span>{d.name} <small>{d.dp === undefined ? 'DP ?' : `${d.dp} DP`}</small></span>
-                <button onClick={(e) => { e.stopPropagation(); toggleDet(d.id) }} aria-label={`${roster.detachmentIds.includes(d.id) ? 'Remove' : 'Add'} ${d.name}`}>
-                  {roster.detachmentIds.includes(d.id) ? '−' : '+'}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <Fold title="Detachment" badge={<span className={`badge ${dp > dpBudget ? 'bad' : ''}`}>{dp} / {dpBudget} DP</span>}>
+            <label className="disp-pick">
+              <span>Disposition:</span>
+              <select value={roster.disposition ?? ''} disabled={!dispOptions.length} onChange={(e) => b.update({ disposition: (e.target.value || undefined) as Disposition | undefined })} aria-label="Disposition">
+                <option value="">{dispOptions.length ? 'Choose...' : 'Pick a detachment first'}</option>
+                {dispOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </label>
+            {dpUnknown && <p className="muted small">DP costs aren't in the source yet, so they count as 0.</p>}
+            <ul className="rows">
+              {army.detachments.map((d) => (
+                <li key={d.id} className={`${roster.detachmentIds.includes(d.id) ? 'chosen' : ''} ${d.id === selectedDet ? 'on' : ''}`} onClick={() => pickDet(d.id)}>
+                  <Eye label={`${d.name} detachment`} onClick={() => setDetModal(d)} />
+                  <span>{d.name} <small>{d.dp === undefined ? 'DP ?' : `${d.dp} DP`}</small></span>
+                  <button onClick={(e) => { e.stopPropagation(); toggleDet(d.id) }} aria-label={`${roster.detachmentIds.includes(d.id) ? 'Remove' : 'Add'} ${d.name}`}>
+                    {roster.detachmentIds.includes(d.id) ? '−' : '+'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Fold>
 
           {ROLES.map((role) => {
             const units = army.units.filter((u) => u.role === role)
             if (!units.length) return null
             return (
-              <div key={role}>
-                <h3 className="panel-title">{ROLE_LABELS[role]}</h3>
+              <Fold key={role} title={ROLE_LABELS[role]}>
                 <ul className="rows">
                   {units.map((u) => {
                     // cost of the NEXT copy of this datasheet, one price per size option
@@ -156,7 +154,7 @@ export default function Builder() {
                     )
                   })}
                 </ul>
-              </div>
+              </Fold>
             )
           })}
         </aside>
