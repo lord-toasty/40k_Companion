@@ -275,3 +275,9 @@ p.composition { margin: .5rem 0; }
 .share-qr { display: block; margin: .5rem auto; max-width: 100%; height: auto !important; background: #fff; border-radius: 6px; }
 .share-modal .share-primary, .share-modal .list-actions button { font-size: .9rem; }
 .share-modal .list-actions { margin: .5rem 0; }
+
+/* phones: the menu takes its own row on the left and its panel opens left-aligned at full width */
+@media (max-width: 760px) {
+  .list-menu { margin-left: 0; flex: 1 1 100%; }
+  .list-pop { left: 0; right: auto; width: 100%; }
+}
