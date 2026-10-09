@@ -1,4 +1,4 @@
-import { datasheetFor, type Ability, type Datasheet, type Enhancement, type GearChoice, type GearSlot, type Loadout, type Unit, type Weapon } from '../schema/army'
+import { datasheetFor, type Ability, type Datasheet, type Enhancement, type GearChoice, type GearSlot, type Loadout, type Unit, type Weapon, type WeaponMod } from '../schema/army'
 
 /**
  * Wargear loadouts. A unit's slots say what each model may carry; a loadout stores only the NON-default
@@ -113,16 +113,39 @@ export function resolveSheet(unit: Unit, models: number, loadout?: Loadout): Res
   return { ...ds, ranged: weapons(ds.ranged), melee: weapons(ds.melee), abilities }
 }
 
-/** A sheet with the weapon and ability an enhancement gives its bearer added (one copy: only the bearer has it). */
+const plus = (base: string, n: number) => `${base} ${n < 0 ? '-' : '+'} ${Math.abs(n)}`
+
+const modWeapon = (w: ResolvedWeapon, m?: WeaponMod): ResolvedWeapon =>
+  !m ? w : {
+    ...w,
+    attacks: m.attacks ? plus(w.attacks, m.attacks) : w.attacks,
+    strength: m.strength ? plus(w.strength, m.strength) : w.strength,
+    ap: m.ap ? plus(w.ap, m.ap) : w.ap,
+    damage: m.damage ? plus(w.damage, m.damage) : w.damage,
+  }
+
+/**
+ * A sheet with an enhancement applied: weapons and abilities it grants are added (one copy, only the bearer has them),
+ * and numbers it changes read "base + bonus" (for example Attacks "4 + 1").
+ */
 export function withEnhancement(sheet: ResolvedSheet, enh?: Enhancement): ResolvedSheet {
-  const g = enh?.grants
-  if (!g) return sheet
+  if (!enh || (!enh.grants && !enh.modifies)) return sheet
+  const g = enh.grants
+  const m = enh.modifies
+  const grantedRanged = g?.ranged ? [{ ...g.ranged, count: 1 }] : []
+  const grantedMelee = g?.melee ? [{ ...g.melee, count: 1 }] : []
   return {
     ...sheet,
-    ranged: g.ranged ? [...sheet.ranged, { ...g.ranged, count: 1 }] : sheet.ranged,
-    abilities: g.ability ? [...sheet.abilities, g.ability] : sheet.abilities,
+    stats: m?.stats?.W ? { ...sheet.stats, W: plus(sheet.stats.W, m.stats.W) } : sheet.stats,
+    ranged: [...sheet.ranged, ...grantedRanged].map((w) => modWeapon(w, m?.ranged)),
+    melee: [...sheet.melee, ...grantedMelee].map((w) => modWeapon(w, m?.melee)),
+    abilities: g?.ability ? [...sheet.abilities, g.ability] : sheet.abilities,
   }
 }
+
+/** An enhancement's rules text without the leading "Infantry models only." / "Upgrade - ... only." eligibility note. */
+export const effectText = (enh: Enhancement) =>
+  (enh.text ?? '').replace(/^(?:Upgrade[^-.]*- )?[^.]*\bonly(?: \([^)]*\))?\.\s*/, '').trim()
 
 /** Just the rows and ability text for one option, for its own popout. */
 export function gearSheet(unit: Unit, choice: GearChoice) {

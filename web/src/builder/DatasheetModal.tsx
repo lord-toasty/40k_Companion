@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { datasheetFor, type Enhancement, type Loadout, type Unit, type Weapon } from '../schema/army'
-import { resolveSheet, withEnhancement } from './loadout'
+import { effectText, resolveSheet, withEnhancement } from './loadout'
 
 const STAT_COLS = ['M', 'T', 'Sv', 'W', 'LD', 'OC', 'InSv', 'Base'] as const
 
@@ -51,6 +51,7 @@ export default function DatasheetModal({ unit, models, loadout, enhancement, all
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  const enh = allOptions ? undefined : enhancement
   const rules = [...(ds.core ?? []), ...(ds.armyRules ?? [])]
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -79,6 +80,14 @@ export default function DatasheetModal({ unit, models, loadout, enhancement, all
             ))}
           </ul>
         </Section>
+
+        {enh && (
+          <Section title="Enhancements" summary={enh.name}>
+            <ul className="ds-abilities">
+              <li><b>{enh.name}</b>{effectText(enh) && <span>{effectText(enh)}</span>}</li>
+            </ul>
+          </Section>
+        )}
 
         <Section title="Rules" summary={rules.join(', ')}>
           {unit.leadsText && (

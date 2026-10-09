@@ -70,13 +70,18 @@ export interface Unit {
  */
 export interface UnitReq { allKeywords?: string[]; anyKeywords?: string[]; noKeywords?: string[] }
 export interface UpgradeRule extends UnitReq { maxUnits: number }
+/** Numeric bonuses to every weapon in a table (attacks, strength, ap, damage) or to a model stat. */
+export interface WeaponMod { attacks?: number; strength?: number; ap?: number; damage?: number }
+export interface EnhancementMods { melee?: WeaponMod; ranged?: WeaponMod; stats?: { W?: number } }
+
 export interface Enhancement {
   id: string
   name: string
   points: number
   text?: string
   upgrade?: UpgradeRule
-  grants?: { ranged?: Weapon; ability?: Ability } // appears on the bearer's datasheet
+  grants?: { ranged?: Weapon; melee?: Weapon; ability?: Ability } // appears on the bearer's datasheet
+  modifies?: EnhancementMods // raw datasheet numbers it changes; shown as "base + bonus"
   requires?: UnitReq // which units can carry it (ordinary enhancements; an upgrade keeps its own in `upgrade`)
   aka?: string // other name for it in a second source (leaks disagree on a couple of names)
 }

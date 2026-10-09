@@ -3,7 +3,7 @@ import type { Army, Unit } from '../../schema/army'
 import { armies } from '../index'
 import { ROLES } from '../../schema/army'
 import { entryPoints, isLeader, leadTargets, rosterPoints, upgradeBlock } from '../../builder/points'
-import { resolveSheet, withEnhancement } from '../../builder/loadout'
+import { effectText, resolveSheet, withEnhancement } from '../../builder/loadout'
 
 const a: Army = armies.custodes
 const unit = (name: string) => a.units.find((u) => u.name === name)!
@@ -130,7 +130,7 @@ describe('Epic Heroes', () => {
 })
 
 describe('Auriferous Orb', () => {
-  it("adds a ranged weapon and its ability to the bearer's sheet", () => {
+  it("adds a ranged weapon to the bearer's sheet", () => {
     const orb = a.detachments.flatMap((d) => d.enhancements).find((e) => e.name === 'Auriferous Orb')!
     const cap = unit('Shield-Captain')
     const plain = resolveSheet(cap, 1)
@@ -139,7 +139,6 @@ describe('Auriferous Orb', () => {
     const w = sheet.ranged.find((x) => x.name === 'Auriferous Orb')!
     expect([w.range, w.attacks, w.skill, w.strength, w.ap, w.damage]).toEqual(['12"', '3', '2+', '1', '0', '1'])
     expect(w.keywords).toEqual(['Anti-non-Monster/Vehicle 2+', 'Devastating Wounds'])
-    expect(sheet.abilities.map((x) => x.name)).toContain('Auriferous Orb')
     expect(withEnhancement(plain, undefined)).toBe(plain)
   })
 })
@@ -188,5 +187,45 @@ describe('Custodes leaders', () => {
     expect(t).not.toContain('Vertus Praetors')
     expect(targets('Shield-Captain on Dawneagle Jetbike').sort()).toEqual(['Gyrfalcon Jetbike Sodality', 'Vertus Praetors'])
     expect(unit('Shield-Captain on Dawneagle Jetbike')).toSatisfy((u: Unit) => isLeader(u))
+  })
+})
+
+describe('enhancements on the datasheet', () => {
+  const enh = (name: string) => a.detachments.flatMap((d) => d.enhancements).find((e) => e.name === name)!
+  const dread = () => a.units.find((u) => u.sizes[0].models === 1 && (u.datasheet?.keywords ?? []).includes('Dreadnought'))!
+
+  it('shows changed numbers as "base + bonus" on every weapon in the table', () => {
+    const d = dread()
+    const plain = resolveSheet(d, 1)
+    const sheet = withEnhancement(plain, enh('Memento Moritoi'))
+    expect(sheet.melee.length).toBeGreaterThan(0)
+    sheet.melee.forEach((w, i) => {
+      expect(w.attacks).toBe(`${plain.melee[i].attacks} + 1`)
+      expect(w.strength).toBe(`${plain.melee[i].strength} + 1`)
+      expect(w.damage).toBe(`${plain.melee[i].damage} + 1`)
+      expect(w.ap).toBe(plain.melee[i].ap) // untouched
+    })
+    expect(sheet.ranged).toEqual(plain.ranged)
+  })
+
+  it('adds to a model stat, ranged attacks, and grants an extra melee weapon', () => {
+    const cap = resolveSheet(unit('Shield-Captain'), 1)
+    expect(withEnhancement(cap, enh("Eagle's Eye")).stats.W).toBe(`${cap.stats.W} + 1`)
+    expect(withEnhancement(cap, enh('Not a Shell Wasted')).ranged[0].attacks).toBe(`${cap.ranged[0].attacks} + 1`)
+    const light = withEnhancement(cap, enh("Emperor's Light"))
+    expect(light.melee.at(-1)).toMatchObject({ name: "Emperor's Light", attacks: '3', count: 1 })
+  })
+
+  it('leaves the sheet alone for an enhancement with only text, and drops the eligibility note from the text', () => {
+    const cap = resolveSheet(unit('Shield-Captain'), 1)
+    expect(withEnhancement(cap, enh("Huntress' Eye"))).toBe(cap)
+    expect(effectText(enh('Memento Moritoi'))).toMatch(/^\+1 to Attacks/)
+    expect(effectText(enh('Radiant Mantle'))).toMatch(/^-1 to Hit/)
+    expect(effectText(enh('Lightning Descent'))).toMatch(/^The bearer's unit can make an ingress/)
+    expect(effectText(enh('Auric Eagle'))).toMatch(/^\+1 to Advance/)
+  })
+
+  it('every enhancement keeps some effect text', () => {
+    for (const e of a.detachments.flatMap((d) => d.enhancements)) expect(effectText(e).length, e.name).toBeGreaterThan(10)
   })
 })

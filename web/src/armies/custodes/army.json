@@ -3031,7 +3031,21 @@
           "id": "guardians-of-the-throne-emperors-light",
           "name": "Emperor's Light",
           "points": 15,
-          "text": "The bearer gains an Extra Attacks melee weapon: A3, WS 2+, S5, AP-2, D2."
+          "text": "The bearer gains an Extra Attacks melee weapon: A3, WS 2+, S5, AP-2, D2.",
+          "grants": {
+            "melee": {
+              "name": "Emperor's Light",
+              "range": "Melee",
+              "attacks": "3",
+              "skill": "2+",
+              "strength": "5",
+              "ap": "-2",
+              "damage": "2",
+              "keywords": [
+                "Extra Attacks"
+              ]
+            }
+          }
         },
         {
           "id": "guardians-of-the-throne-castellans-mark",
@@ -3043,7 +3057,12 @@
           "id": "guardians-of-the-throne-eagles-eye",
           "name": "Eagle's Eye",
           "points": 30,
-          "text": "+1 to the bearer's Wound total. Once per battle, when attacks are allocated to the bearer, it has a 3+ invulnerable save."
+          "text": "+1 to the bearer's Wound total. Once per battle, when attacks are allocated to the bearer, it has a 3+ invulnerable save.",
+          "modifies": {
+            "stats": {
+              "W": 1
+            }
+          }
         }
       ],
       "stratagems": [
@@ -3180,6 +3199,11 @@
             "anyKeywords": [
               "Infantry"
             ]
+          },
+          "modifies": {
+            "ranged": {
+              "attacks": 1
+            }
           }
         }
       ],
@@ -3400,10 +3424,6 @@
                 "Anti-non-Monster/Vehicle 2+",
                 "Devastating Wounds"
               ]
-            },
-            "ability": {
-              "name": "Auriferous Orb",
-              "text": "After shooting, select one enemy unit it hit: -1 to that unit's Hit rolls until the start of your next turn."
             }
           }
         },
@@ -4147,6 +4167,13 @@
             "allKeywords": [
               "Dreadnought"
             ]
+          },
+          "modifies": {
+            "melee": {
+              "attacks": 1,
+              "strength": 1,
+              "damage": 1
+            }
           }
         },
         {
