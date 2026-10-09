@@ -2,6 +2,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { datasheetFor, type Enhancement, type Loadout, type Unit, type Weapon } from '../schema/army'
 import { effectText, resolveSheet, withEnhancement } from './loadout'
 
+/** A value an enhancement changed reads "4 + 1"; such tables size to their content so it never wraps. */
+const modified = (v: string) => / [+-] \d/.test(v)
+
 const STAT_COLS = ['M', 'T', 'Sv', 'W', 'LD', 'OC', 'InSv', 'Base'] as const
 
 function Section({ title, summary, children }: { title: string; summary?: string; children?: ReactNode }) {
@@ -19,8 +22,9 @@ function Section({ title, summary, children }: { title: string; summary?: string
 
 export function WeaponTable({ title, weapons, skill }: { title: string; weapons: (Weapon & { count?: number })[]; skill: string }) {
   if (!weapons.length) return null
+  const mod = weapons.some((w) => [w.attacks, w.strength, w.ap, w.damage].some(modified))
   return (
-    <table className="ds-table ds-weapons">
+    <table className={`ds-table ds-weapons ${mod ? 'has-mod' : ''}`}>
       <thead>
         <tr><th>{title}</th><th>Range</th><th>A</th><th>{skill}</th><th>S</th><th>AP</th><th>D</th><th>Keywords</th></tr>
       </thead>
@@ -64,7 +68,7 @@ export default function DatasheetModal({ unit, models, loadout, enhancement, all
         {hasChoices && <p className="muted small ds-mode">{allOptions ? 'Showing all wargear options.' : 'Showing the equipped loadout only.'}</p>}
 
         <Section title="Models" summary={`(${models})`}>
-          <table className="ds-table ds-stats">
+          <table className={`ds-table ds-stats ${cols.some((k) => modified(ds.stats[k] ?? '')) ? 'has-mod' : ''}`}>
             <thead><tr><th>Unit</th>{cols.map((k) => <th key={k}>{k === 'InSv' ? 'InSv' : k}</th>)}</tr></thead>
             <tbody><tr><td>{unit.name} (x{models})</td>{cols.map((k) => <td key={k}>{ds.stats[k]}</td>)}</tr></tbody>
           </table>

@@ -296,3 +296,10 @@ p.composition { margin: .5rem 0; }
 .shield-host { display: inline-flex; align-items: center; flex: none; color: #b8962e; cursor: help; }
 .rows li > .shield-host { flex: none; margin: 0; }
 .shield-legend { display: flex; align-items: center; gap: .4rem; }
+
+/* tables with a "base + bonus" value: size columns to their content, numbers never wrap */
+.ds-table.has-mod { table-layout: auto; }
+.ds-table.has-mod th, .ds-table.has-mod td { width: auto; }
+.ds-table.has-mod td:not(:first-child):not(.kw) { white-space: nowrap; }
+.ds-table.has-mod th:not(:first-child):not(:last-child) { white-space: nowrap; }
+.ds-weapons.has-mod td:first-child, .ds-weapons.has-mod td.kw { min-width: 5.5rem; }
