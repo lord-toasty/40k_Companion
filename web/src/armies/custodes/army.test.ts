@@ -112,6 +112,13 @@ describe('Custodes enhancement restrictions', () => {
     expect(ok('Oblivion Knight', 'Knight-Centura')).toBe(true)
     expect(ok('Oblivion Knight', 'Shield-Captain')).toBe(false)
   })
+  it('lets the Knight-Centura take only the two Null Maiden Vigil enhancements', () => {
+    const all = a.detachments.flatMap((d) => d.enhancements).filter((e) => !e.upgrade)
+    const allowed = all.filter((e) => upgradeBlock(e, unit('Knight-Centura')) === null).map((e) => e.name).sort()
+    expect(allowed).toEqual(["Huntress' Eye", 'Oblivion Knight'].sort())
+    expect(upgradeBlock(enh("Pareldor's Caducatrix"), unit('Knight-Centura'))).toMatch(/Anathema Psykana/)
+    expect(ok('Radiant Mantle', 'Knight-Centura')).toBe(false) // Infantry, but still barred
+  })
 })
 
 describe('Epic Heroes', () => {

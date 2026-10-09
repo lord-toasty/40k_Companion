@@ -4,6 +4,7 @@ import type { Disposition } from '../data/matrix'
 import { armies, armyList } from '../armies'
 import Eye from '../components/Eye'
 import Fold from '../components/Fold'
+import ShieldHostIcon from '../components/ShieldHostIcon'
 import { ROLES, ROLE_LABELS, sizeName, sizeOf, type RosterEntry, type Detachment, type Enhancement, type GearChoice, type Loadout, type Unit } from '../schema/army'
 import { blank, useBuilder } from '../store/builder'
 import ArmyRuleInfo, { ArmyRuleModal } from './ArmyRuleInfo'
@@ -118,12 +119,14 @@ export default function Builder() {
                 {dispOptions.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </label>
+            <p className="muted small shield-legend"><ShieldHostIcon /> Shield Host detachments: only one can be taken.</p>
             {dpUnknown && <p className="muted small">DP costs aren't in the source yet, so they count as 0.</p>}
             <ul className="rows">
               {army.detachments.map((d) => (
                 <li key={d.id} className={`${roster.detachmentIds.includes(d.id) ? 'chosen' : ''} ${d.id === selectedDet ? 'on' : ''}`} onClick={() => pickDet(d.id)}>
                   <Eye label={`${d.name} detachment`} onClick={() => setDetModal(d)} />
                   <span>{d.name} <small>{d.dp === undefined ? 'DP ?' : `${d.dp} DP`}</small></span>
+                  {d.unique?.group === 'Shield Host' && <ShieldHostIcon />}
                   <button onClick={(e) => { e.stopPropagation(); toggleDet(d.id) }} aria-label={`${roster.detachmentIds.includes(d.id) ? 'Remove' : 'Add'} ${d.name}`}>
                     {roster.detachmentIds.includes(d.id) ? '−' : '+'}
                   </button>

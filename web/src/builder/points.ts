@@ -59,6 +59,9 @@ export function upgradeBlock(enh: Enhancement, unit: Unit): string | null {
   if (!enh.upgrade && unit.role !== 'Character') return 'Only Characters can take this enhancement'
   const kw = unit.datasheet?.keywords ?? []
   if (kw.includes('Epic Hero')) return "Epic Heroes can't take enhancements"
+  // Anathema Psykana models are limited to enhancements written for them (the Null Maiden Vigil pair), whatever else they could qualify for
+  const forAnathema = [enh.requires?.allKeywords, enh.requires?.anyKeywords].some((k) => k?.includes('Anathema Psykana'))
+  if (!enh.upgrade && kw.includes('Anathema Psykana') && !forAnathema) return 'Anathema Psykana units can only take Anathema Psykana enhancements'
   return (enh.upgrade && reqBlock(enh.upgrade, kw)) || (enh.requires && reqBlock(enh.requires, kw)) || null
 }
 
