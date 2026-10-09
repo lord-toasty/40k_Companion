@@ -294,5 +294,5 @@ p.composition { margin: .5rem 0; }
 
 /* Shield Host marker */
 .shield-host { display: inline-flex; align-items: center; flex: none; color: #b8962e; cursor: help; }
-.rows li > .shield-host { margin: 0 .35rem; }
+.rows li > .shield-host { flex: none; margin: 0; }
 .shield-legend { display: flex; align-items: center; gap: .4rem; }
