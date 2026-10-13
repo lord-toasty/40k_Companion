@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 const SCRIPT_SRC = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js'
-const SLUG = 'lordtoasty'
+const SLUG = 'lordtoasty1114'
 
 type Widget = (text: string, slug: string, color: string, emoji: string, font: string, fontColor: string, outline: string, coffee: string) => string
 const widget = () => (window as unknown as { bmcBtnWidget?: Widget }).bmcBtnWidget
